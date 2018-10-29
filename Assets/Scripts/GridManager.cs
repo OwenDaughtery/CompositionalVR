@@ -5,6 +5,8 @@ using UnityEngine;
 public class GridManager : MonoBehaviour {
 
 	#region variables
+	private ObjectPooler objectPooler;	
+
 	//A list for storing every Vertex (sphere) in the environment
 	private GameObject[] allVertices;
 	
@@ -18,6 +20,7 @@ public class GridManager : MonoBehaviour {
 	Vector3 yVector;
 	Vector3 zVector;
 
+	private List<GameObject> noteBoundaries = new List<GameObject>();
 	//The vertexManager for any specific vertex (sphere) at any given point
 	private VertexManager vertexManager;
 
@@ -27,14 +30,37 @@ public class GridManager : MonoBehaviour {
 	#endregion
 
 	void Start () {
+		objectPooler = ObjectPooler.Instance;
 		xVector = new Vector3(0f, 0f, 0f);
 		yVector = new Vector3(0f, 0f, 0f);
 		zVector = new Vector3(0f, 0f, 0f);
+		createNoteBoundaries();
 	}
 	
 	void Update () {
 		//every frame, call the method that will update the variables of all the vertices in the environment.
 		getVertexStats();
+	}
+
+	void createNoteBoundaries(){
+
+		float segmentIncrement = 360/(Notes.GetNames(typeof(Notes)).Length-2);
+		float numberOfSegments = Mathf.CeilToInt(360/segmentIncrement);
+		for (int i = 0; i < numberOfSegments; i++){
+			GameObject noteBoundary = objectPooler.spawnFromPool("NoteBoundary", new Vector3(0.0f, 14.9f, 2.5f), gameObject.transform);
+			noteBoundaries.Add(noteBoundary);
+			Vector3 tempPos = noteBoundary.transform.position;
+			//tempPos = rotateNoteBoundary(tempPos, i * segmentIncrement);
+			noteBoundary.transform.position = tempPos;
+			//noteBoundary.transform.parent = gameObject.transform;
+		}
+		
+	}
+
+	Vector3 rotateNoteBoundary(Vector3 pos, float theta){
+		pos.x= 1 * Mathf.Sin(theta);
+		pos.z=1 * Mathf.Cos(theta);
+		return pos;
 	}
 
 	#region main

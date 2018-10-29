@@ -251,8 +251,9 @@ public class InteractionManager : MonoBehaviour {
 
 	//method used to check if the current held vertex is going too low, too far from center, or too close to center.
 	private void outOfBoundsCheck(){
+		bool outOfBounds = false;
 		int r =4;
-		Vector3 pos = currentGameObject.transform.position;
+		Vector3 pos = transform.position;
 		float currentX = pos.x;
 		float currentY = pos.y;
 		float currentZ = pos.z;
@@ -263,13 +264,16 @@ public class InteractionManager : MonoBehaviour {
 			//pos.Set(pos.x, 0.15f, pos.z);
 			//letGo();
 			//currentVertexManager.moveTo(pos);
+			outOfBounds = true;
 		}else if(Mathf.Sqrt(Mathf.Pow(currentX,2) + Mathf.Pow(currentZ,2))>r){
 			float m = (currentZ/currentX);
-			float newX = (r/(Mathf.Sqrt(Mathf.Pow(m,2)+1)));
+			float newX = ((r-0.01f)/(Mathf.Sqrt(Mathf.Pow(m,2)+1)));
 			float newZ = newX*m;
 			pos.Set(newX, currentY, newZ);
-			letGo();
+			//letGo();
 			tempVertexManager.moveTo(pos);
+			outOfBounds = true;
+			//return;
 		}/*else if(currentVertexManager.getHigherVertex()<currentY){
 			pos.Set(currentX, currentVertexManager.getHigherVertex(), currentZ);
 			letGo();
@@ -280,6 +284,11 @@ public class InteractionManager : MonoBehaviour {
 			letGo();
 			tempVertexManager.moveTo(pos);
 		}*/	
+		if(!outOfBounds){
+			Vector3 tempPos= transform.position;
+			tempVertexManager.moveTo(tempPos);
+		}
+
 	}
 
 	#endregion
