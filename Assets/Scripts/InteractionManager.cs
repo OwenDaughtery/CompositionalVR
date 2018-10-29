@@ -160,11 +160,12 @@ public class InteractionManager : MonoBehaviour {
 		if(!vm.getParentsLineManager().checkIfTetheredForXZ(currentGameObject)){
 			return currentPos;
 		}else{
-			float m = (currentPos.z/currentPos.x);
-			float newX = (0.815f/(Mathf.Sqrt(Mathf.Pow(m,2)+1)));
-			float newZ = newX*m;
-			currentPos.Set(newX, currentPos.y, newZ);
-			return currentPos;
+			//float m = (currentPos.z/currentPos.x);
+			//float newX = (0.815f/(Mathf.Sqrt(Mathf.Pow(m,2)+1)));
+			//float newZ = newX*m;
+			//currentPos.Set(newX, currentPos.y, newZ);
+			
+			return currentPos.normalized*0.815f;
 		}
 	}
 
