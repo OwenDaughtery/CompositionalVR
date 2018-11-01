@@ -185,7 +185,7 @@ public class VertexManager : MonoBehaviour, IPooledObject{
 	//method used to set the values of the tracer
 	private void tracerUpdate(){
 		Vector3[] tracerPositions = new Vector3[2];
-		tracerPositions.SetValue(gameObject.transform.position, 0);
+		tracerPositions.SetValue(gameObject.transform.parent.transform.position, 0);
 		tracerPositions.SetValue(transform.parent.GetComponent<InteractionManager>().snap() , 1);
 		tracer.SetPositions(tracerPositions);
 	}	

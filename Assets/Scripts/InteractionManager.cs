@@ -136,6 +136,8 @@ public class InteractionManager : MonoBehaviour {
 
 		currentPos = tetherToPoint(currentVertexManager, currentPos);
 		
+		
+
 		return currentPos;
 	}
 
@@ -263,6 +265,24 @@ public class InteractionManager : MonoBehaviour {
 		currentGameObject = null;
 	}
 
+	//true if everyhtings ok, else false
+	private float checkSiblingHeights(){
+		float siblingY;
+		float siblingTiming;
+		currentVertexManager.getHigherVertex(out siblingY, out siblingTiming);
+		
+		if(transform.position.y>siblingY){
+			return siblingY;
+		}
+
+		currentVertexManager.getLowerVertex(out siblingY, out siblingTiming);
+		if(transform.position.y<siblingY){
+			return siblingY;
+		}
+		
+		return transform.position.y;
+	}
+
 	//method used to check if the current held vertex is going too low, too far from center, or too close to center.
 	private void outOfBoundsCheck(){
 		bool outOfBounds = false;
@@ -288,6 +308,10 @@ public class InteractionManager : MonoBehaviour {
 			tempVertexManager.moveTo(pos);
 			outOfBounds = true;
 			//return;
+		}else if(checkSiblingHeights()!=transform.position.y){
+			pos.y=checkSiblingHeights();
+			tempVertexManager.moveTo(pos);
+			outOfBounds = true;
 		}/*else if(currentVertexManager.getHigherVertex()<currentY){
 			pos.Set(currentX, currentVertexManager.getHigherVertex(), currentZ);
 			letGo();
