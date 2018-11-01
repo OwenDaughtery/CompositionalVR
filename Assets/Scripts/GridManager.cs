@@ -21,8 +21,11 @@ public class GridManager : MonoBehaviour {
 	Vector3 zVector;
 
 	private List<GameObject> noteBoundaries = new List<GameObject>();
+	private List<GameObject> fadingInNoteBoundaries = new List<GameObject>();
+	private List<GameObject> fadingOutNoteBoundaries = new List<GameObject>();
 	//The vertexManager for any specific vertex (sphere) at any given point
 	private VertexManager vertexManager;
+	private float fadeSpeed = 0.25f;
 
 	//The list of possible notes to play, always includes none at start.
 	public enum Notes {none, C4, D4, E4, F4, G4, A4, B4, C5, D5, E5, F5, G5, A5, B5};
@@ -40,27 +43,115 @@ public class GridManager : MonoBehaviour {
 	void Update () {
 		//every frame, call the method that will update the variables of all the vertices in the environment.
 		getVertexStats();
+		fadeInNoteBoundaries();
+		fadeOutNoteBoundaries();
 	}
 
-	void createNoteBoundaries(){
+	private void createNoteBoundaries(){
 
-		float segmentIncrement = 360/(Notes.GetNames(typeof(Notes)).Length-2);
+		float segmentIncrement = 90;
+		//float segmentIncrement = 360/(Notes.GetNames(typeof(Notes)).Length-2);
 		float numberOfSegments = Mathf.CeilToInt(360/segmentIncrement);
 		for (int i = 0; i < numberOfSegments; i++){
-			GameObject noteBoundary = objectPooler.spawnFromPool("NoteBoundary", new Vector3(0.0f, 14.9f, 2.5f), gameObject.transform);
+			GameObject noteBoundary = objectPooler.spawnFromPool("NoteBoundary", Vector3.zero, gameObject.transform);
 			noteBoundaries.Add(noteBoundary);
-			Vector3 tempPos = noteBoundary.transform.position;
-			//tempPos = rotateNoteBoundary(tempPos, i * segmentIncrement);
-			noteBoundary.transform.position = tempPos;
-			//noteBoundary.transform.parent = gameObject.transform;
+
+			noteBoundary.transform.eulerAngles = new Vector3(0f, i*segmentIncrement, 90f);
+			noteBoundary.transform.position = rotateNoteBoundary(noteBoundary.transform.position, i*segmentIncrement);
+//			Color currentColour = noteBoundary.GetComponent<Renderer>().material.color;
+//			noteBoundary.GetComponent<Renderer>().material.color= new Color(currentColour.r, currentColour.g,currentColour.b,0.0f);
+			noteBoundary.SetActive(false);
 		}
+		/*
+		foreach (GameObject item in noteBoundaries){
+			MeshRenderer renderer = item.GetComponent<MeshRenderer>();
+ 			Material material = renderer.material;
+ 
+ 			material.SetFloat("_Mode", 4f);
+
+			material.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
+			material.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+			material.SetInt("_ZWrite", 0);
+			material.DisableKeyword("_ALPHATEST_ON");
+			material.EnableKeyword("_ALPHABLEND_ON");
+			material.DisableKeyword("_ALPHAPREMULTIPLY_ON");
+			material.renderQueue = 3000;
+			for (int i = 100; i>0; i--){
+			Color32 col = renderer.material.GetColor("_Color");
+ 			col.a = (byte) i;
+ 			renderer.material.SetColor("_Color", col);
+								
+			}
+			
+		}*/
 		
 	}
 
-	Vector3 rotateNoteBoundary(Vector3 pos, float theta){
-		pos.x= 1 * Mathf.Sin(theta);
-		pos.z=1 * Mathf.Cos(theta);
+	private Vector3 rotateNoteBoundary(Vector3 pos, float theta){
+		pos.x= 2.5f * Mathf.Sin(theta* Mathf.Deg2Rad);
+		pos.z=2.5f * Mathf.Cos(theta* Mathf.Deg2Rad);
 		return pos;
+	}
+
+	private void fadeInNoteBoundaries(){
+		List<GameObject> boundariesToRemove = new List<GameObject>();
+		foreach (GameObject boundary in fadingInNoteBoundaries){
+			Color currentColour = boundary.GetComponent<Renderer>().material.color;
+			float updatedAlpha = currentColour.a+fadeSpeed;
+			boundary.GetComponent<Renderer>().material.color = new Color(currentColour.r, currentColour.g, currentColour.b, updatedAlpha);
+			if(updatedAlpha>=1){
+				boundariesToRemove.Add(boundary);
+			}
+		}
+		foreach (GameObject boundary in boundariesToRemove){
+				fadingInNoteBoundaries.Remove(boundary);
+		}
+	}
+
+	private void fadeOutNoteBoundaries(){
+		List<GameObject> boundariesToRemove = new List<GameObject>();
+		foreach (GameObject boundary in fadingOutNoteBoundaries){
+			Color currentColour = boundary.GetComponent<Renderer>().material.color;
+			float updatedAlpha = currentColour.a-fadeSpeed;
+			boundary.GetComponent<Renderer>().material.color = new Color(currentColour.r, currentColour.g, currentColour.b, updatedAlpha);
+			if(updatedAlpha<=0){
+				boundariesToRemove.Add(boundary);
+			}
+		}
+		foreach (GameObject boundary in boundariesToRemove){
+				fadingOutNoteBoundaries.Remove(boundary);
+		}
+	}
+
+	public void showNoteBoundaries(Notes lastNote, Notes newNote){
+		int lastNoteID = (int)lastNote-1;
+		int newNoteID = (int)newNote-1;
+		if(lastNoteID==(Notes.GetNames(typeof(Notes)).Length-2) && newNoteID<lastNoteID){
+			print("branch 1");
+			noteBoundaries[(Notes.GetNames(typeof(Notes)).Length-2)].SetActive(true);
+			/*for (int i = 0; i < newNoteID; i++)
+			{
+				noteBoundaries[i].SetActive(true);
+				//fadingInNoteBoundaries.Add(noteBoundaries[i]);
+			}*/
+		}
+		else if(lastNoteID<newNoteID){
+			print("branch 2");
+			for (int i = lastNoteID+1; i < newNoteID+1; i++){
+				noteBoundaries[(i+3)%(Notes.GetNames(typeof(Notes)).Length-2)].SetActive(true);
+				//fadingInNoteBoundaries.Add(noteBoundaries[(i+3)%(Notes.GetNames(typeof(Notes)).Length-2)]);
+			}
+		}else if(lastNoteID>newNoteID){
+			print("branch 3");
+			for (int i = lastNoteID+1; i > newNoteID+1; i--)
+			{
+				noteBoundaries[(i+2)%(Notes.GetNames(typeof(Notes)).Length-2)].SetActive(true);
+				//fadingInNoteBoundaries.Add(noteBoundaries[(i+2)%(Notes.GetNames(typeof(Notes)).Length-2)]);
+			}
+		}else{
+			Debug.LogError("showNoteBoundaries found inconsistent branch");
+		}
+
 	}
 
 	#region main

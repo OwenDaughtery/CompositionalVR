@@ -25,6 +25,7 @@ public class LineManager : MonoBehaviour {
 	//the object pool to get vertices from.
 	private ObjectPooler objectPooler;
 
+
 	public Dictionary<float, List<VertexManager>> timingDict;
 
 	//int variable to hold the index of the last vertex that is played.
@@ -43,6 +44,7 @@ public class LineManager : MonoBehaviour {
 	#endregion
 
 	void Start () {
+
 		localRotation = gameObject.transform.eulerAngles.y;
 		timingDict = new Dictionary<float, List<VertexManager>>();
 		for (int i = 0; i <= 16; i++){
@@ -56,9 +58,56 @@ public class LineManager : MonoBehaviour {
 		GameObject objectPulseManager = GameObject.FindGameObjectWithTag("PulseManager");
 		pulseManager = objectPulseManager.GetComponent<PulseManager>();
 		chooseVoice();
+
+		addLineColliders(attachedLR);
+
+		AddColliderToLine(attachedLR, attachedLR.GetPosition(1), attachedLR.GetPosition(2));
 	}
 
+	private void addLineColliders(LineRenderer line){
+		for (int i = 0; i < line.positionCount-1; i++){
+			objectPooler.spawnFromPool("")
+		}
+	}
+
+	private void AddColliderToLine(LineRenderer line, Vector3 startPoint, Vector3 endPoint){
+		//create the collider for the line
+		BoxCollider lineCollider = new GameObject("LineCollider").AddComponent<BoxCollider>();
+		//set the collider as a child of your line
+		lineCollider.transform.parent = line.transform; 
+		// get width of collider from line 
+		float lineWidth = 0.05f; 
+		// get the length of the line using the Distance method
+		float lineLength = Vector3.Distance(startPoint, endPoint);      
+		// size of collider is set where X is length of line, Y is width of line
+		//z will be how far the collider reaches to the sky
+		lineCollider.size = new Vector3(lineLength, lineWidth, lineWidth);   
+		// get the midPoint
+		Vector3 midPoint = (startPoint + endPoint) / 2;
+		// move the created collider to the midPoint
+		lineCollider.transform.position = midPoint;
+	
+	
+		//heres the beef of the function, Mathf.Atan2 wants the slope, be careful however because it wants it in a weird form
+		//it will divide for you so just plug in your (y2-y1),(x2,x1)
+		float angle = Mathf.Atan2((endPoint.z - startPoint.z), (endPoint.x - startPoint.x));
+		
+		// angle now holds our answer but it's in radians, we want degrees
+		// Mathf.Rad2Deg is just a constant equal to 57.2958 that we multiply by to change radians to degrees
+		angle *= Mathf.Rad2Deg;
+	
+		//were interested in the inverse so multiply by -1
+		angle *= -1; 
+		// now apply the rotation to the collider's transform, carful where you put the angle variable
+		// in 3d space you don't wan't to rotate on your y axis
+	
+		lineCollider.transform.eulerAngles = new Vector3(0, 0, 90);
+		lineCollider.transform.Rotate(0, 0, angle);
+		}
+
 	void Update(){
+		
+
 		setActiveLineManager();
 	}
 
@@ -305,7 +354,6 @@ public class LineManager : MonoBehaviour {
 		//translate the position of every child and add it to finalPositions.
 		for (int i = 0; i < children.Count; i++){
 			Vector3 tempPos = children[i].transform.position;
-			print(localRotation);
 			//tempPos = vertexRotationTwo(tempPos, localRotation+270, i);
 			finalPositions[i]=tempPos;	
 		}

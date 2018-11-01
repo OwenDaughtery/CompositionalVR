@@ -24,8 +24,9 @@ public class VertexManager : MonoBehaviour, IPooledObject{
 	private List<GameObject> playedLights;
 	//how fast the above stated light should fade
 	private float lightFade = 0.5f;
-
+	private GridManager.Notes lastVertexNote;
 	private float parentsRotation;
+	private GridManager gridManager;
 
 	//=====Sound Variables:=====
 	[SerializeField]
@@ -121,6 +122,10 @@ public class VertexManager : MonoBehaviour, IPooledObject{
 		return parentsRotation;
 	}
 
+	public void setLastVertexNote(GridManager.Notes newLastVertexNote){
+		lastVertexNote = newLastVertexNote;
+	}
+
 	#endregion
 
 	void Start(){
@@ -138,6 +143,8 @@ public class VertexManager : MonoBehaviour, IPooledObject{
 			//print("controller position: " + gameObject.transform.parent.transform.position);
 			parentsLineManager.moveLineVertex(vertexID, gameObject.transform.position, parentsRotation);
 			tracerUpdate();
+			noteBoundaryUpdate(getVertexNote());
+			
 			
 		}
 
@@ -156,10 +163,12 @@ public class VertexManager : MonoBehaviour, IPooledObject{
 
 	//method used for setting variables to appropriate values, will be called both on start and onObjectSpawn(0)
 	private void setUp(){
+		setLastVertexNote(GridManager.Notes.none);
 		playedLights = new List<GameObject>();
 		baselineParent=gameObject.transform.parent;
 		parentsRotation=baselineParent.transform.eulerAngles.y;
 		parentsLineManager = transform.parent.GetComponent<LineManager>();	
+		gridManager = GameObject.FindGameObjectWithTag("Grid").GetComponent<GridManager>();
 		isSelected=false;	
 		vertexLength=1;
 
@@ -180,6 +189,15 @@ public class VertexManager : MonoBehaviour, IPooledObject{
 		tracerPositions.SetValue(transform.parent.GetComponent<InteractionManager>().snap() , 1);
 		tracer.SetPositions(tracerPositions);
 	}	
+
+	private void noteBoundaryUpdate(GridManager.Notes vertexNote){
+		if(lastVertexNote!=GridManager.Notes.none){
+			if(lastVertexNote!=vertexNote){
+				gridManager.showNoteBoundaries(lastVertexNote, vertexNote);
+			}
+		}
+		setLastVertexNote(vertexNote);
+	}
 
 	#endregion	
 

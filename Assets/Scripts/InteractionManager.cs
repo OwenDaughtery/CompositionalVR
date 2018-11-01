@@ -191,7 +191,21 @@ public class InteractionManager : MonoBehaviour {
 	//method called when user wants to remove the vertex currently being held from the game.
 	public void removeVertex(){
 		if(!currentRigidBody){
-			return;
+			if(GetNearestRigidBody()){
+				GameObject nearestVertex = GetNearestRigidBody().gameObject;
+				Vector3 nearestVertexVector = nearestVertex.transform.position;
+				if(Vector3.Distance(transform.position, nearestVertexVector)<0.1f){
+					VertexManager nearestVertexManager = nearestVertex.GetComponent<VertexManager>();
+					if(nearestVertexManager.getVertexID()>1){
+						nearestVertex.transform.parent=gameObject.transform;
+						nearestVertexManager.getParentsLineManager().removeVertex(nearestVertex.transform.position, nearestVertexManager.getVertexID(), nearestVertex);
+						resetVariables();
+					}
+					
+				}else{
+					return;
+				}
+			}
 		}else if(currentVertexManager.getVertexID()!=1){
 			//if statement won't be entered if the id of the vertex being held is 1 (because that vertex is needed)
 			currentVertexManager.getParentsLineManager().removeVertex(transform.position, currentVertexManager.getVertexID(), currentGameObject);
