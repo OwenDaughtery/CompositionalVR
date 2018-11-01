@@ -20,8 +20,11 @@ public class LineManager : MonoBehaviour {
 
 	//the vertices of the line renderer.
 	private Vector3[] vertices;
+
 	//boolean as to whether the baseline is currently tethered to the tether point yet.
-	private bool isTethered = false;
+	//private bool isTethered = true;
+	private bool isLineActive = true;
+
 	//the object pool to get vertices from.
 	private ObjectPooler objectPooler;
 	private Dictionary<int, BoxCollider> IDToBC = new Dictionary<int, BoxCollider>();
@@ -59,6 +62,7 @@ public class LineManager : MonoBehaviour {
 		chooseVoice();
 
 		addLineColliders(attachedLR);
+		pulseManager.activateLineManager(this);
 
 	}
 
@@ -117,7 +121,7 @@ public class LineManager : MonoBehaviour {
   }
 
 	void Update(){
-		setActiveLineManager();
+		//setActiveLineManager();
 		//updateLineColliders();
 	}
 
@@ -133,11 +137,15 @@ public class LineManager : MonoBehaviour {
 		timingDict[newTiming].Add(vm);
 	}
 
+	public int getNumberOfVertices(){
+		return attachedLR.positionCount;
+	}
+
 	#region tethering
 
 	//method used to check if baseline is tethered. if it is and wasn't before, active this line manager.
 	//if it isn't tethered and was before checking, deactive this line manager. 
-	private void setActiveLineManager(){
+	/*private void setActiveLineManager(){
 		List<GameObject> childrenVertices = getChildrenVertices();
 		foreach (GameObject vertex in childrenVertices){
 			if(checkIfTethered(vertex)){
@@ -159,7 +167,7 @@ public class LineManager : MonoBehaviour {
 		}else{
 			isTethered = false;
 		}
-	}
+	} */
 
 	public bool checkIfTethered(GameObject vertex){
 		return checkIfTetheredForY(vertex) && checkIfTetheredForXZ(vertex);
@@ -263,24 +271,26 @@ public class LineManager : MonoBehaviour {
 	private void drawVerts(Vector3[] currentVerts){
 		int vertexID=0;
 		foreach (var vert in currentVerts){
-			VertexManager newVert = drawVert(vert, vertexID).GetComponent<VertexManager>();
+			VertexManager newVert = drawVert(vert, vertexID, true).GetComponent<VertexManager>();
 			vertexID++;
 		}	
 	}
 
 	//Method used to create a new vertex (which is a sphere) by grabbing one from pool
-	private GameObject drawVert(Vector3 vert, int vertexID){
-		//Get the object from pool, which will spawn it in, and set it's details to the parameters
-		GameObject sphere = objectPooler.spawnFromPool("Vertex", vert, attachedLR.transform);
-		sphere.transform.name = "Vertex";
-		sphere.AddComponent<VertexManager>();
-		sphere.AddComponent<Rigidbody>();
-		sphere.GetComponent<Rigidbody>().useGravity = false;
-		sphere.GetComponent<Rigidbody>().isKinematic= true;
-		sphere.GetComponent<VertexManager>().setVertexID(vertexID);
-		sphere.GetComponent<VertexManager>().setParentsLineManager(this);
+	private GameObject drawVert(Vector3 vert, int vertexID, bool isStatic){
+		GameObject vertex = null;
+		vertex = objectPooler.spawnFromPool("Vertex", vert, attachedLR.transform);
 		
-		return sphere;
+		//Get the object from pool, which will spawn it in, and set it's details to the parameters
+		vertex.transform.name = "Vertex";
+		vertex.AddComponent<VertexManager>();
+		vertex.AddComponent<Rigidbody>();
+		vertex.GetComponent<Rigidbody>().useGravity = false;
+		vertex.GetComponent<Rigidbody>().isKinematic= true;
+		vertex.GetComponent<VertexManager>().setVertexID(vertexID);
+		vertex.GetComponent<VertexManager>().setParentsLineManager(this);
+		
+		return vertex;
 	}
 
 	//Method used to move the vertex of a linerenderer to a position
@@ -356,7 +366,7 @@ public class LineManager : MonoBehaviour {
 		}
 		
 		//create a new vertex sphere
-		GameObject newVert = drawVert(pos, vertexID);
+		GameObject newVert = drawVert(pos, vertexID, false);
 		VertexManager newVertsVM = newVert.GetComponent<VertexManager>();
 		//make the new vertex's size and "length" field equal to the one currently selected
 		newVert.transform.localScale=selectedVertex.transform.lossyScale;

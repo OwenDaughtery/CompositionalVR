@@ -37,7 +37,7 @@ public class GridManager : MonoBehaviour {
 		xVector = new Vector3(0f, 0f, 0f);
 		yVector = new Vector3(0f, 0f, 0f);
 		zVector = new Vector3(0f, 0f, 0f);
-		createNoteBoundaries();
+		//createNoteBoundaries();
 	}
 	
 	void Update () {
@@ -160,7 +160,6 @@ public class GridManager : MonoBehaviour {
 	private void getVertexStats(){
 		//get all vertices (spheres)
 		allVertices = GameObject.FindGameObjectsWithTag("Vertex");
-
 		foreach (GameObject vertex in allVertices){
 			//get each vertexManager attached to current vertex (sphere)
 			vertexManager = vertex.GetComponent<VertexManager>();

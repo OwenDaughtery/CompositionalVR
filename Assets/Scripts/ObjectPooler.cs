@@ -31,6 +31,7 @@ public class ObjectPooler : MonoBehaviour {
 				GameObject obj = Instantiate(pool.prefab);
 				obj.SetActive(false);
 				objectPool.Enqueue(obj);
+				obj.transform.parent=gameObject.transform;
 			}
 			poolDictionary.Add(pool.tag, objectPool);
 		}
@@ -63,7 +64,8 @@ public class ObjectPooler : MonoBehaviour {
 
 	//method used to take an object and return it to it's pool for future use.
 	public void returnToPool(string tag, GameObject objectToReturn){
-		objectToReturn.transform.parent = null;
+		//objectToReturn.transform.parent=null;
+		objectToReturn.transform.parent=gameObject.transform;
 		poolDictionary[tag].Enqueue(objectToReturn);
 		objectToReturn.SetActive(false);
 

@@ -78,10 +78,13 @@ public class InteractionManager : MonoBehaviour {
 			fixedJoint.connectedBody = currentRigidBody;
 			currentVertexManager.onPickUp();
 
-		
-			if(currentVertexManager.getVertexID()==1){
+			
+			if(!isEditable(currentVertexManager.getVertexID(), currentVertexManager.getBaseLineParent().gameObject)){
+				
 				VertexManager newlyCreatedVertexManager = addNewVertex().GetComponent<VertexManager>();
 				newlyCreatedVertexManager.moveTo(oldPos);
+			}else{
+				
 			}
 
 
@@ -162,12 +165,12 @@ public class InteractionManager : MonoBehaviour {
 		if(!vm.getParentsLineManager().checkIfTetheredForXZ(currentGameObject)){
 			return currentPos;
 		}else{
-			//float m = (currentPos.z/currentPos.x);
-			//float newX = (0.815f/(Mathf.Sqrt(Mathf.Pow(m,2)+1)));
-			//float newZ = newX*m;
-			//currentPos.Set(newX, currentPos.y, newZ);
-			
-			return currentPos.normalized*0.815f;
+			float m = (currentPos.z/currentPos.x);
+			float newX = (0.815f/(Mathf.Sqrt(Mathf.Pow(m,2)+1)));
+			float newZ = newX*m;
+			currentPos.Set(newX, currentPos.y, newZ);
+			return currentPos;
+			//return currentPos.normalized*0.815f;
 		}
 	}
 
@@ -198,7 +201,7 @@ public class InteractionManager : MonoBehaviour {
 				Vector3 nearestVertexVector = nearestVertex.transform.position;
 				if(Vector3.Distance(transform.position, nearestVertexVector)<0.1f){
 					VertexManager nearestVertexManager = nearestVertex.GetComponent<VertexManager>();
-					if(nearestVertexManager.getVertexID()>1){
+					if(isEditable(nearestVertexManager.getVertexID(), nearestVertexManager.getBaseLineParent().gameObject)){
 						nearestVertex.transform.parent=gameObject.transform;
 						nearestVertexManager.getParentsLineManager().removeVertex(nearestVertex.transform.position, nearestVertexManager.getVertexID(), nearestVertex);
 						resetVariables();
@@ -208,12 +211,20 @@ public class InteractionManager : MonoBehaviour {
 					return;
 				}
 			}
-		}else if(currentVertexManager.getVertexID()!=1){
+		}else if(isEditable(currentVertexManager.getVertexID(), currentVertexManager.getBaseLineParent().gameObject)){
 			//if statement won't be entered if the id of the vertex being held is 1 (because that vertex is needed)
 			currentVertexManager.getParentsLineManager().removeVertex(transform.position, currentVertexManager.getVertexID(), currentGameObject);
 			resetVariables();
 		}else{
 			return;
+		}
+	}
+
+	private bool isEditable(int vertexID, GameObject baseLine){
+		if(vertexID>1 && baseLine.GetComponent<LineManager>().getNumberOfVertices()-1!=vertexID){
+			return true;
+		}else{
+			return false;
 		}
 	}
 
@@ -244,6 +255,7 @@ public class InteractionManager : MonoBehaviour {
 		float distance = 0.0f;
 
 		foreach (Rigidbody contactBody in contactRigidBodies){
+			VertexManager vm = contactBody.gameObject.GetComponent<VertexManager>();
 			//don't bother checking the position of contactBody if its ID is 0 as that vertex cannot be selected
 			if(contactBody.gameObject.active && contactBody.gameObject.GetComponent<VertexManager>().getVertexID()>=1){
 				distance = (contactBody.gameObject.transform.position - transform.position).sqrMagnitude;

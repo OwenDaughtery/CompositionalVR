@@ -25,9 +25,10 @@ public class PulseManager : MonoBehaviour {
 		/*foreach (GameObject baseLine in baseLines){
 			lineManagers.Add(baseLine.GetComponent<LineManager>());
 		}*/
-		height=-10;
+		height=0;
 		speed = 2.5f;
 		objectPooler = ObjectPooler.Instance;
+
 		foreach (LineManager LM in lineManagers){
 			LMtoPulse.Add(LM, null);
 		}
@@ -76,6 +77,7 @@ public class PulseManager : MonoBehaviour {
 
 	//get a pulse object from the pool.
 	private GameObject createPulse(LineManager LM){
+		
 		GameObject pulse = objectPooler.spawnFromPool("Pulse", Vector3.zero, gameObject.transform);
 		return pulse;
 	}

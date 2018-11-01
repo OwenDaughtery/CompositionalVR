@@ -143,7 +143,7 @@ public class VertexManager : MonoBehaviour, IPooledObject{
 			//print("controller position: " + gameObject.transform.parent.transform.position);
 			parentsLineManager.moveLineVertex(vertexID, gameObject.transform.position, parentsRotation);
 			tracerUpdate();
-			noteBoundaryUpdate(getVertexNote());
+			//noteBoundaryUpdate(getVertexNote());
 			
 			
 		}
