@@ -55,17 +55,17 @@ public class WandManager : MonoBehaviour {
 		if(device.GetPressDown(SteamVR_Controller.ButtonMask.Touchpad)){
 			Vector2 touchpad = (device.GetAxis(Valve.VR.EVRButtonId.k_EButton_Axis0));
 			if (touchpad.y > 0.6f){
-				print("Moving Up");
+				
 			}else if (touchpad.y < -0.6f){
-				print("Moving Down");
+				
 				interactionManager.removeVertex();
 			}
 
 			if (touchpad.x > 0.6f){
-				print("Moving Right");
+				
 				interactionManager.increaseVertexSize();
 			}else if (touchpad.x < -0.6f){
-				print("Moving left");
+				
 				interactionManager.decreaseVertexSize();
 			}
 		}
