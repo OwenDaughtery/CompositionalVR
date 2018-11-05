@@ -78,6 +78,9 @@ public class LineManager : MonoBehaviour {
 		//setActiveLineManager();
 	}
 
+	public float getLocalRotation(){
+		return localRotation;
+	}
 
 
 	public void updateTimingDict(float oldTiming, float newTiming, VertexManager vm){
@@ -241,10 +244,17 @@ public class LineManager : MonoBehaviour {
 		return vertex;
 	}
 
+	public Vector3 rotateVertex(Vector3 pos, float rotationFloat){
+		Quaternion rotation = Quaternion.Euler(0,rotationFloat,0);
+		Vector3 myVector = pos;
+		Vector3 rotateVector = rotation * myVector;
+		return rotateVector;
+	}
+
 	//Method used to move the vertex of a linerenderer to a position
 	public void moveLineVertex(int index, Vector3 pos, float eugerValueRotation){
 		//pos=VertexTranslation(pos);
-		
+		pos = rotateVertex(pos, -getLocalRotation());
 		// ========temp comment ====== pos = vertexRotation(pos, eugerValueRotation+270, index);
 		attachedLR.SetPosition(index, pos);
 	}
@@ -290,6 +300,10 @@ public class LineManager : MonoBehaviour {
 
 	#endregion
 
+	public Dictionary<int, BoxCollider> getAllColliders(){
+		return boxColliderManager.getAllBoxColliders();
+	}
+
 	#region addVertex
 
 	//Method used to add a new line renderer vertex and a new vertex sphere.
@@ -297,7 +311,7 @@ public class LineManager : MonoBehaviour {
 		//translate the position to take into account movement of parent object
 		
 		//pos=vertexRotation(pos, localRotation+270, vertexID);
-
+		pos = rotateVertex(pos, -getLocalRotation());
 		//===adding a vertex to the middle of a line:===
 		//Get the vertex spheres that are children of this object
 		List<GameObject> children = getChildrenVertices();
@@ -329,6 +343,7 @@ public class LineManager : MonoBehaviour {
 		//translate the position of every child and add it to finalPositions.
 		for (int i = 0; i < children.Count; i++){
 			Vector3 tempPos = children[i].transform.position;
+			tempPos = rotateVertex(tempPos, -getLocalRotation());
 			//tempPos = vertexRotationTwo(tempPos, localRotation+270, i);
 			finalPositions[i]=tempPos;	
 		}
@@ -371,13 +386,13 @@ public class LineManager : MonoBehaviour {
 			}
 
 			//Translate the vector3 pos to take into account the position of the baseline object.
-			pos=VertexTranslation(pos);
+			pos=rotateVertex(pos, -getLocalRotation());
 
 			//create a list of final positions that the line renderer vertices will be set too
 			Vector3[] finalPositions = new Vector3[children.Count];
 			for (int i = 0; i < children.Count; i++){
 				Vector3 tempPos = children[i].transform.position;
-				tempPos = VertexTranslation(tempPos);
+				tempPos = rotateVertex(tempPos, -getLocalRotation());
 				finalPositions[i]=tempPos;	
 			}
 

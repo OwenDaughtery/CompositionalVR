@@ -20,6 +20,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4463129193085586}
   - component: {fileID: 65650912114940708}
+  - component: {fileID: 114915746667196246}
   m_Layer: 0
   m_Name: LineColliderPrefab
   m_TagString: LineCollider
@@ -47,8 +48,19 @@ BoxCollider:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1781531538626198}
   m_Material: {fileID: 0}
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_Enabled: 1
   serializedVersion: 2
-  m_Size: {x: 1.3, y: 0.05, z: 0.05}
+  m_Size: {x: 1.3, y: 0.07, z: 0.07}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &114915746667196246
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1781531538626198}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 757207bfe480b594494e5c0e19575e5d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

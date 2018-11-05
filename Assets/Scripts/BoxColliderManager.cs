@@ -24,6 +24,12 @@ public class BoxColliderManager : MonoBehaviour {
 		updateBoxColliders();
 	}
 
+
+
+	public Dictionary<int, BoxCollider> getAllBoxColliders(){
+		return IDToBC;
+	}
+
 	private void addBoxColliders(){
 		for (int i = 0; i < attachedLR.positionCount-1; i++){
 			addBoxCollider(i);
@@ -74,7 +80,7 @@ public class BoxColliderManager : MonoBehaviour {
 		boxCollider.transform.position = midPoint; 
 
 		float lineLength = Vector3.Distance(startPoint, endPoint); 
-		boxCollider.size = new Vector3(lineLength, attachedLR.endWidth, attachedLR.endWidth); 
+		boxCollider.size = new Vector3(lineLength, attachedLR.endWidth+0.1f, attachedLR.endWidth+0.1f); 
 
 		float angle = Mathf.Atan2((endPoint.z - startPoint.z), (endPoint.x - startPoint.x));
 

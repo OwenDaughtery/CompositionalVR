@@ -53,7 +53,9 @@ public class PulseManager : MonoBehaviour {
 			}
 		}*/
 		foreach(KeyValuePair<LineManager, GameObject> pair in LMtoPulse){
+			float rotation = pair.Key.getLocalRotation();
 			newPulsePos = pair.Key.interpole(height, (pair.Value!=null));
+			newPulsePos = pair.Key.rotateVertex(newPulsePos, rotation);
 			if(pair.Value){
 				pair.Value.transform.position = newPulsePos;
 			}

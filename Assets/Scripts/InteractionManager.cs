@@ -178,10 +178,36 @@ public class InteractionManager : MonoBehaviour {
 
 	#region adding, removing and changing the size of vertices
 
+	private Dictionary<LineManager, Dictionary<int, BoxCollider>> collectColliders(){
+		Dictionary<LineManager,Dictionary<int,BoxCollider>> LMToBC = new Dictionary<LineManager,Dictionary<int,BoxCollider>>();
+		foreach (GameObject baseLine in GameObject.FindGameObjectsWithTag("BaseLine")){
+			LineManager lm = baseLine.GetComponent<LineManager>();
+			LMToBC.Add(lm, lm.getAllColliders());
+		}
+		return LMToBC;
+	}
+
 	//method called when user creates a new vertex while holding another
 	public GameObject addNewVertex(){
 		if(!currentRigidBody){
+			/*Dictionary<LineManager,Dictionary<int,BoxCollider>> LMToBC = collectColliders();
+
+			LineManager closestLM;
+			int closestID;
+			BoxCollider closestCollder;
+			float closestDistance = float.MaxValue;
+
+			foreach(KeyValuePair<LineManager, Dictionary<int,BoxCollider>> pair in LMToBC){
+				foreach (KeyValuePair<int, BoxCollider> pair2 in pair.Value){
+					float distance = pair.Value.C
+				}
+				newPulsePos = pair.Key.interpole(height, (pair.Value!=null));
+				if(pair.Value){
+					pair.Value.transform.position = newPulsePos;
+				}
+			}*/
 			return null;
+
 		}else{
 			float clampedY;
 			float clampedTiming;
