@@ -37,7 +37,7 @@ public class GridManager : MonoBehaviour {
 		xVector = new Vector3(0f, 0f, 0f);
 		yVector = new Vector3(0f, 0f, 0f);
 		zVector = new Vector3(0f, 0f, 0f);
-		//createNoteBoundaries();
+		createNoteBoundaries();
 	}
 	
 	void Update () {
@@ -49,8 +49,8 @@ public class GridManager : MonoBehaviour {
 
 	private void createNoteBoundaries(){
 
-		float segmentIncrement = 90;
-		//float segmentIncrement = 360/(Notes.GetNames(typeof(Notes)).Length-2);
+		//float segmentIncrement = 90;
+		float segmentIncrement = 360/(Notes.GetNames(typeof(Notes)).Length-2);
 		float numberOfSegments = Mathf.CeilToInt(360/segmentIncrement);
 		for (int i = 0; i < numberOfSegments; i++){
 			GameObject noteBoundary = objectPooler.spawnFromPool("NoteBoundary", Vector3.zero, gameObject.transform);
@@ -127,7 +127,7 @@ public class GridManager : MonoBehaviour {
 		int lastNoteID = (int)lastNote-1;
 		int newNoteID = (int)newNote-1;
 		if(lastNoteID==(Notes.GetNames(typeof(Notes)).Length-2) && newNoteID<lastNoteID){
-			print("branch 1");
+			//print("branch 1");
 			noteBoundaries[(Notes.GetNames(typeof(Notes)).Length-2)].SetActive(true);
 			/*for (int i = 0; i < newNoteID; i++)
 			{
@@ -136,13 +136,13 @@ public class GridManager : MonoBehaviour {
 			}*/
 		}
 		else if(lastNoteID<newNoteID){
-			print("branch 2");
+			//print("branch 2");
 			for (int i = lastNoteID+1; i < newNoteID+1; i++){
 				noteBoundaries[(i+3)%(Notes.GetNames(typeof(Notes)).Length-2)].SetActive(true);
 				//fadingInNoteBoundaries.Add(noteBoundaries[(i+3)%(Notes.GetNames(typeof(Notes)).Length-2)]);
 			}
 		}else if(lastNoteID>newNoteID){
-			print("branch 3");
+			//print("branch 3");
 			for (int i = lastNoteID+1; i > newNoteID+1; i--)
 			{
 				noteBoundaries[(i+2)%(Notes.GetNames(typeof(Notes)).Length-2)].SetActive(true);

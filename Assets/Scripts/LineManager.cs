@@ -27,7 +27,7 @@ public class LineManager : MonoBehaviour {
 
 	//the object pool to get vertices from.
 	private ObjectPooler objectPooler;
-	private Dictionary<int, BoxCollider> IDToBC = new Dictionary<int, BoxCollider>();
+	
 	public Dictionary<float, List<VertexManager>> timingDict;
 
 	//int variable to hold the index of the last vertex that is played.
@@ -35,6 +35,7 @@ public class LineManager : MonoBehaviour {
 	private int lastPlayedVertex;
 	private int lastHeight;
 	private float localRotation;
+	private BoxColliderManager boxColliderManager;
 
 
 	//possible colours where the letter corressponds to the voice enum.
@@ -61,58 +62,11 @@ public class LineManager : MonoBehaviour {
 		pulseManager = objectPulseManager.GetComponent<PulseManager>();
 		chooseVoice();
 
-		addLineColliders(attachedLR);
+		boxColliderManager = this.GetComponent<BoxColliderManager>();
 		pulseManager.activateLineManager(this);
 
 	}
 
-	private void addLineColliders(LineRenderer line){
-		for (int i = 0; i < line.positionCount-1; i++){
-			Vector3 startPoint = line.GetPosition(i);
-			Vector3 endPoint = line.GetPosition(i+1);
-			
-			GameObject newLineCollider = objectPooler.spawnFromPool("LineCollider", Vector3.zero, gameObject.transform);
-			BoxCollider boxCollider = newLineCollider.GetComponent<BoxCollider>();
-			moveBoxCollder(boxCollider, startPoint, endPoint);
-			
-			IDToBC.Add(i, boxCollider);
-		}
-	}
-
-	private void moveBoxCollder(BoxCollider boxCollider, Vector3 startPoint, Vector3 endPoint){
-		Vector3 midPoint = (startPoint + endPoint)/2;
-		boxCollider.transform.position = midPoint; 
-
-		float lineLength = Vector3.Distance(startPoint, endPoint); 
-		boxCollider.size = new Vector3(lineLength, attachedLR.endWidth, attachedLR.endWidth); 
-
-		float angle = Mathf.Atan2((endPoint.z - startPoint.z), (endPoint.x - startPoint.x));
-
-		//print(Vector2.Angle(x, y));
-
-		float zDegree = FindDegree(startPoint.x - endPoint.x, startPoint.y - endPoint.y);
-		zDegree *=-1;
-
-		float xDegree = FindDegree(startPoint.z - endPoint.z, startPoint.y - endPoint.y);
-
-		float yDegree = FindDegree(startPoint.x - endPoint.x, startPoint.z - endPoint.z);
-		yDegree *=-1;
-
-
-		//boxCollider.transform.eulerAngles = new Vector3(xDegree,yDegree,zDegree+90);
-
-		// angle now holds our answer but it's in radians, we want degrees
-		// Mathf.Rad2Deg is just a constant equal to 57.2958 that we multiply by to change radians to degrees
-		angle *= Mathf.Rad2Deg;
-	
-		//were interested in the inverse so multiply by -1
-		angle *= -1; 
-		// now apply the rotation to the collider's transform, carful where you put the angle variable
-		// in 3d space you don't wan't to rotate on your y axis
-		//boxCollider.transform.eulerAngles = new Vector3(angle, 0, 0);
-		//boxCollider.transform.Rotate(0, angle, 0);
-
-	}
 
 	public static float FindDegree(float x, float y){
       float value = ((float)((System.Math.Atan2(x, y) / System.Math.PI) * 180f));
@@ -122,15 +76,9 @@ public class LineManager : MonoBehaviour {
 
 	void Update(){
 		//setActiveLineManager();
-		//updateLineColliders();
 	}
 
-	private void updateLineColliders(){
-		for (int i = 0; i < attachedLR.positionCount-1; i++){
-			BoxCollider boxCollider = IDToBC[i];
-			moveBoxCollder(boxCollider, attachedLR.GetPosition(i), attachedLR.GetPosition(i+1));
-		}
-	}
+
 
 	public void updateTimingDict(float oldTiming, float newTiming, VertexManager vm){
 		timingDict[oldTiming].Remove(vm);
@@ -389,6 +337,8 @@ public class LineManager : MonoBehaviour {
 		attachedLR.positionCount+=1;
 		attachedLR.SetPositions(finalPositions);
 		
+		boxColliderManager.addBoxCollider(vertexID);
+
 		return newVert;
 		
 	}
@@ -398,6 +348,8 @@ public class LineManager : MonoBehaviour {
 
 	//Method used to remove a vertex from a line and return it back to the pool
 	public void removeVertex(Vector3 pos, int vertexID, GameObject selectedVertex){
+		boxColliderManager.removeBoxCollider(vertexID);
+
 		//if statement to detect whether the vertex being removed is the last in the line.
 		if(vertexID==attachedLR.positionCount-1){
 			//Lower the position count by 1 and return the object to the pool.
@@ -435,6 +387,8 @@ public class LineManager : MonoBehaviour {
 			attachedLR.SetPositions(finalPositions);
 			//return the removed vertex sphere back to the pool
 			objectPooler.returnToPool("Vertex", selectedVertex);
+
+
 		}	
 	}
 	#endregion
