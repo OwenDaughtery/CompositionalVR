@@ -27,10 +27,18 @@ public class GridManager : MonoBehaviour {
 	private VertexManager vertexManager;
 	private float fadeSpeed = 0.25f;
 
+	//32 = 12 and 25
+	//24 = 12
+	private static int ySegments = 16;
+
 	//The list of possible notes to play, always includes none at start.
 	public enum Notes {none, C4, D4, E4, F4, G4, A4, B4, C5, D5, E5, F5, G5, A5, B5};
 
 	#endregion
+
+	public static int getYSegments(){
+		return ySegments;
+	}
 
 	void Start () {
 		objectPooler = ObjectPooler.Instance;
@@ -202,10 +210,10 @@ public class GridManager : MonoBehaviour {
 
 	#region timing related
 
-	//method used to "clamp" volume to range 0-16
+	//method used to "clamp" volume to range 0-ySegments
 	private float convertTiming(float oldTiming){
 		//0.1623
-		return Mathf.Floor((16-((oldTiming - 0.1623f) / (3.2f - 0.1623f) * (16 - 0) + 0)));
+		return Mathf.Floor((getYSegments()-((oldTiming - 0.1623f) / (3.2f - 0.1623f) * (getYSegments() - 0) + 0)));
 	}
 
 	#endregion

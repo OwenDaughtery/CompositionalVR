@@ -15,6 +15,7 @@ public class VertexManager : MonoBehaviour, IPooledObject{
 	private bool isSelected;
 
 	//ID of the vertex, unique ONLY to each baseline
+	[SerializeField]
 	private int vertexID;
 	//a line renderer to point from where a vertex is, to where it will be snapped too.
 	private LineRenderer tracer;
@@ -143,7 +144,7 @@ public class VertexManager : MonoBehaviour, IPooledObject{
 			//print("controller position: " + gameObject.transform.parent.transform.position);
 			parentsLineManager.moveLineVertex(vertexID, gameObject.transform.position, parentsRotation);
 			tracerUpdate();
-			noteBoundaryUpdate(getVertexNote());
+			//noteBoundaryUpdate(getVertexNote());
 			
 			
 		}

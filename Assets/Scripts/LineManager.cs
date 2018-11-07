@@ -50,7 +50,7 @@ public class LineManager : MonoBehaviour {
 
 		localRotation = gameObject.transform.eulerAngles.y;
 		timingDict = new Dictionary<float, List<VertexManager>>();
-		for (int i = 0; i <= 16; i++){
+		for (int i = 0; i <= GridManager.getYSegments(); i++){
 			timingDict[i] = new List<VertexManager>();
 		}
 		lastPlayedVertex = -1;
@@ -125,7 +125,7 @@ public class LineManager : MonoBehaviour {
 	}
 
 	public bool checkIfTetheredForY(GameObject vertex){
-		return vertex.GetComponent<VertexManager>().getVertexTiming()==16;
+		return vertex.GetComponent<VertexManager>().getVertexTiming()==GridManager.getYSegments();
 	}
 
 	public bool checkIfTetheredForXZ(GameObject vertex){
@@ -308,11 +308,10 @@ public class LineManager : MonoBehaviour {
 
 	//Method used to add a new line renderer vertex and a new vertex sphere.
 	public GameObject addVertex(Vector3 pos, int vertexID, GameObject selectedVertex){
-		//translate the position to take into account movement of parent object
 		
-		//pos=vertexRotation(pos, localRotation+270, vertexID);
+		
 		pos = rotateVertex(pos, -getLocalRotation());
-		//===adding a vertex to the middle of a line:===
+		
 		//Get the vertex spheres that are children of this object
 		List<GameObject> children = getChildrenVertices();
 		//Add the selected vertex to that list (as it won't be a child of the object if it's selected), and sort the list.
@@ -355,7 +354,6 @@ public class LineManager : MonoBehaviour {
 		boxColliderManager.addBoxCollider(vertexID);
 
 		return newVert;
-		
 	}
 	#endregion
 
@@ -509,7 +507,7 @@ public class LineManager : MonoBehaviour {
 
 		if(lastHeight>flooredHeight){
 			if(playVertex){
-				foreach (VertexManager vm in timingDict[16]){
+				foreach (VertexManager vm in timingDict[GridManager.getYSegments()]){
 					if(vm.getVertexID()!=attachedLR.positionCount-1){
 						vm.playVertex();
 					}

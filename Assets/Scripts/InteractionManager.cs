@@ -64,29 +64,33 @@ public class InteractionManager : MonoBehaviour {
 		if(!currentRigidBody){
 			return;
 		}else{
-			//set currentVertexManager
-			currentGameObject = currentRigidBody.gameObject;
-			currentVertexManager = currentRigidBody.GetComponent<VertexManager>();
-			currentVertexManager.setIsSelected(true);
-			
-
-			Vector3 oldPos = currentGameObject.transform.position;
-
-			//set the rigidBody parent and position to the controller holding it.
-			currentRigidBody.transform.parent=gameObject.transform;
-			currentRigidBody.transform.position = transform.position;
-			fixedJoint.connectedBody = currentRigidBody;
-			currentVertexManager.onPickUp();
-
-			
-			if(!isEditable(currentVertexManager.getVertexID(), currentVertexManager.getBaseLineParent().gameObject)){
-				
-				VertexManager newlyCreatedVertexManager = addNewVertex().GetComponent<VertexManager>();
-				newlyCreatedVertexManager.moveTo(oldPos);
+			if(currentRigidBody.GetComponent<VertexManager>().getBaseLineParent().GetComponent<LineManager>().getNumberOfVertices()-1==currentRigidBody.GetComponent<VertexManager>().getVertexID()){
+				resetVariables();
+				//if the id is the last in the line, don't do anything
 			}else{
+				//set currentVertexManager
+				currentGameObject = currentRigidBody.gameObject;
+				currentVertexManager = currentRigidBody.GetComponent<VertexManager>();
+				currentVertexManager.setIsSelected(true);
 				
-			}
 
+				Vector3 oldPos = currentGameObject.transform.position;
+
+				//set the rigidBody parent and position to the controller holding it.
+				currentRigidBody.transform.parent=gameObject.transform;
+				currentRigidBody.transform.position = transform.position;
+				fixedJoint.connectedBody = currentRigidBody;
+				currentVertexManager.onPickUp();
+
+				
+				if(!isEditable(currentVertexManager.getVertexID(), currentVertexManager.getBaseLineParent().gameObject)){
+					VertexManager newlyCreatedVertexManager = addNewVertex().GetComponent<VertexManager>();
+					newlyCreatedVertexManager.moveTo(oldPos);
+
+				}else{
+					
+				}
+			}
 
 		
 
@@ -127,7 +131,7 @@ public class InteractionManager : MonoBehaviour {
 		//Vector3 currentPos = new Vector3(controller.GetComponent<SphereCollider>().transform.position.x, clampedY, controller.GetComponent<SphereCollider>().transform.position.z);
 
 		float maxY = 3.3f;
-		float segment = 3.3f/16;
+		float segment = 3.3f/GridManager.getYSegments();
 		float upper = segment*clampedTiming;
 		float lower = segment *(clampedTiming-1);
 		

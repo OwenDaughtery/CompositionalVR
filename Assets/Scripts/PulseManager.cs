@@ -26,7 +26,7 @@ public class PulseManager : MonoBehaviour {
 			lineManagers.Add(baseLine.GetComponent<LineManager>());
 		}*/
 		height=0;
-		speed = 2.5f;
+		speed = GridManager.getYSegments()/3;
 		objectPooler = ObjectPooler.Instance;
 
 		foreach (LineManager LM in lineManagers){
@@ -37,7 +37,7 @@ public class PulseManager : MonoBehaviour {
 	void Update () {
 		//update the height
 		height += Time.deltaTime * speed;
-		if(height>=16){
+		if(height>=GridManager.getYSegments()){
 			height=0;
 		}
 		updatePulses();
