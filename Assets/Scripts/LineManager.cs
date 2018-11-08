@@ -500,8 +500,7 @@ public class LineManager : MonoBehaviour {
 		int lowerBoundIndex = 0;
 		int upperBoundIndex = 0;
 		int flooredHeight = Mathf.FloorToInt(height);
-		print(flooredHeight);
-
+		
 		if(flooredHeight==-1){
 			
 		}else{
@@ -571,7 +570,6 @@ public class LineManager : MonoBehaviour {
 
 		if(flooredHeight==-1){
 			//lead on pulse:
-			print("testttinnggg");
 			return Vector3.Lerp(PulseTranslation(attachedLR.GetPosition(0)),PulseTranslation(attachedLR.GetPosition(1)),1-(height*-1));
 		}else{
 

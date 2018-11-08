@@ -38,33 +38,50 @@ public class PulseManager : MonoBehaviour {
 	
 	void Update () {
 		//update the height
-		List<GameObject> keys = new List<GameObject> (PulseToHeight.Keys);
-		foreach(GameObject key in keys) {
-			PulseToHeight[key] = PulseToHeight[key]+(Time.deltaTime * speed);
-			if(PulseToHeight[key]>=GridManager.getYSegments()){
-				PulseToHeight[key] = -1 ;
-			}
-		}
+		
 		updatePulses();
 	}
 
 	//method used to take each line manager, and if it has a pulse, make the position of that pulse = to a new position.
 	public void updatePulses(){
+		
 		Vector3 newPulsePos;
+		List<LineManager> linesToAddTo = new List<LineManager>();
+		Dictionary<LineManager, GameObject> pulsesToRemove = new Dictionary<LineManager, GameObject>();
 		/*foreach (LineManager lm in lineManagers){
 			newPulsePos = lm.interpole(height, (LMtoPulse[lm]!=null));
 			if(LMtoPulse[lm]){
 				LMtoPulse[lm].transform.position = newPulsePos;
 			}
 		}*/
-		foreach(KeyValuePair<LineManager, List<GameObject>> pair in LMtoPulse){
-			foreach (GameObject pulse in pair.Value){
-				float rotation = pair.Key.getLocalRotation();
-				newPulsePos = pair.Key.interpole(PulseToHeight[pulse], (pair.Value!=null));
-				newPulsePos = pair.Key.rotateVertex(newPulsePos, rotation);
-				pulse.transform.position = newPulsePos;
+		List<LineManager> keys = new List<LineManager> (LMtoPulse.Keys);
+		foreach(LineManager key in keys){
+			foreach (GameObject pulse in LMtoPulse[key]){
+				PulseToHeight[pulse] = PulseToHeight[pulse]+(Time.deltaTime * speed);
+				if(PulseToHeight[pulse]>=GridManager.getYSegments()-1 && LMtoPulse[key].Count==1){
+					linesToAddTo.Add(key);
+				}
+				if(PulseToHeight[pulse]>=GridManager.getYSegments()){
+					pulsesToRemove.Add(key, pulse);
+				}else{
+					float rotation = key.getLocalRotation();
+					
+					newPulsePos = key.interpole(PulseToHeight[pulse], (LMtoPulse[key]!=null));
+					newPulsePos = key.rotateVertex(newPulsePos, rotation);
+					pulse.transform.position = newPulsePos;
+				}
 				
 			}
+		}
+
+		foreach(LineManager lm in linesToAddTo){
+			activateLineManager(lm);
+		}
+
+		foreach (KeyValuePair<LineManager, GameObject> pair in pulsesToRemove){
+			LMtoPulse[pair.Key].Remove(pair.Value);
+			PulseToHeight.Remove(pair.Value);
+			objectPooler.returnToPool("Pulse", pair.Value);
 		}
 	}
 
@@ -74,8 +91,8 @@ public class PulseManager : MonoBehaviour {
 	public void activateLineManager(LineManager newLM){
 		GameObject pulse = createPulse(newLM);
 		
-		PulseToHeight.Add(pulse, -1f);
-		print(LMtoPulse[newLM]);
+		PulseToHeight.Add(pulse, -1); //temp value, should be -1 not 8
+		
 
 		(LMtoPulse[newLM]).Add(pulse);
 		
