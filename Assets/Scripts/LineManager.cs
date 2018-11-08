@@ -15,7 +15,7 @@ public class LineManager : MonoBehaviour {
 	private GameObject attachedObject;
 
 	//an enum of possible voices, along with a variable to hold a voice enum.
-	public enum Voices {A, B, C};
+	public enum Voices {None, A, B, C};
 	private Voices voice;
 
 	//the vertices of the line renderer.
@@ -42,6 +42,7 @@ public class LineManager : MonoBehaviour {
 	Color colourA = new Color(0.89f, 0.12f, 0.05f, 1);
 	Color colourB = new Color(0.05f, 0.09f, 0.89f, 1);
 	Color colourC = new Color(0.05f, 0.89f, 0.47f, 1);
+	Color colourNone = new Color(1f, 1f, 1f, 1);
 
 
 	#endregion
@@ -82,9 +83,16 @@ public class LineManager : MonoBehaviour {
 		return localRotation;
 	}
 
+	public void cycleVoices(){
+		int voiceID = (int)voice;
+		voiceID = (voiceID + 1)%Voices.GetNames(typeof(Voices)).Length;
+		voice = (Voices) voiceID;
+		setVoiceColour();
+	}
+
 	public Dictionary<float, List<VertexManager>> getTimingDict(){
 		return timingDict;
-
+		
 	}
 
 	public void updateTimingDict(float oldTiming, float newTiming, VertexManager vm){
@@ -144,7 +152,7 @@ public class LineManager : MonoBehaviour {
 
 	//method called once to choose a random voice, and set the attached line renderer to the corresponding colour.
 	private void chooseVoice(){
-		voice = (Voices)Random.Range(0, (Voices.GetNames(typeof(Voices)).Length));
+		voice = (Voices)Random.Range(1, (Voices.GetNames(typeof(Voices)).Length));
 		setVoiceColour();
 	}
 
@@ -154,8 +162,10 @@ public class LineManager : MonoBehaviour {
 			attachedLR.SetColors(colourA, new Color(0.89f, colourA.g+0.41f, 0.05f, 1));
 		}else if(voice==Voices.B){
 			attachedLR.SetColors(colourB, new Color(colourB.g+0.18f, colourB.r, 0.89f, 1));
-		}if(voice==Voices.C){
+		}else if(voice==Voices.C){
 			attachedLR.SetColors(colourC,new Color(0.05f, 0.89f, colourC.b-0.28f, 1));
+		}else if(voice==Voices.None){
+			attachedLR.SetColors(colourNone, colourNone);
 		}
 	}
 

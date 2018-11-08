@@ -67,7 +67,7 @@ public class InteractionManager : MonoBehaviour {
 			return;
 		}else{
 			if(currentRigidBody.GetComponent<VertexManager>().getBaseLineParent().GetComponent<LineManager>().getNumberOfVertices()-1==currentRigidBody.GetComponent<VertexManager>().getVertexID()){
-				print("cant pick up last vertex");
+				currentRigidBody.GetComponent<VertexManager>().getParentsLineManager().cycleVoices();
 				resetVariables();
 				//if the id is the last in the line, don't do anything
 			}else{
