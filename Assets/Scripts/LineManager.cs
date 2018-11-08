@@ -527,7 +527,7 @@ public class LineManager : MonoBehaviour {
 		
 			
 
-			if(lastHeight>flooredHeight){
+			/*if(lastHeight>flooredHeight){
 				if(playVertex){
 					foreach (VertexManager vm in timingDict[GridManager.getYSegments()]){
 						if(vm.getVertexID()!=attachedLR.positionCount-1){
@@ -535,18 +535,29 @@ public class LineManager : MonoBehaviour {
 						}
 					}
 				}
-			}else if(lastHeight<flooredHeight){
-
-				float diffOfHeights = flooredHeight - lastHeight;
+			}else */
+		
+			if(lastHeight>flooredHeight && flooredHeight==0){
 				if(playVertex){
+					foreach(VertexManager vm in timingDict[0]){
+						vm.playVertex();
+					}
+				}
+			}
+			else if(lastHeight<flooredHeight){
+				
+				float diffOfHeights = flooredHeight - lastHeight;
+				if(playVertex && flooredHeight<GridManager.getYSegments()-1){
 					foreach (VertexManager vm in timingDict[flooredHeight]){
 						vm.playVertex();	
 					}
 				}
 			}
 		}
-		lastHeight = flooredHeight;
-
+		if(flooredHeight!=-1){
+			lastHeight = flooredHeight;
+		}
+		
 		/*
 		//second 1/3 of method used for deciding which vertices should be played, if at all based off a passed boolean variable.
 		if(lowerBoundIndex>lastPlayedVertex){

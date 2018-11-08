@@ -319,7 +319,7 @@ public class VertexManager : MonoBehaviour, IPooledObject{
 	#endregion
 
 	public void playVertex(){
-		print("entering play vertex");
+	
 		lightUpVertex(parentsLineManager.getColourOfVoice());
 		GridManager.Notes note;
 		float timing;

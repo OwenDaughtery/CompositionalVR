@@ -30,10 +30,11 @@ public class GridManager : MonoBehaviour {
 
 	//32 = 12 and 25
 	//24 = 12
-	private static int ySegments = 12;
+	private static int ySegments = 32;
 
 	//The list of possible notes to play, always includes none at start.
 	public enum Notes {none, C4, Cs4, D4, Ds4, E4, F4, Fs4, G4, Gs4, A4, As4, B4, C5, Cs5, D5, Ds5, E5, F5, Fs5, G5, Gs5, A5, As5, B5, C6};
+	public static Dictionary<int, float> timingToY = new Dictionary<int, float>();
 	public static Dictionary<Notes, float> noteToFreq = new Dictionary<Notes, float>{
 		{Notes.C4, 261.626f},
 		{Notes.Cs4, 277.183f},
@@ -69,6 +70,10 @@ public class GridManager : MonoBehaviour {
 	}
 
 	void Start () {
+		float yIncrement = 3.3f/getYSegments();
+		for (int i = 0; i <= getYSegments(); i++){
+			timingToY.Add(i,3.3f-(i*yIncrement));
+		}
 		objectPooler = ObjectPooler.Instance;
 		xVector = new Vector3(0f, 0f, 0f);
 		yVector = new Vector3(0f, 0f, 0f);
@@ -249,9 +254,12 @@ public class GridManager : MonoBehaviour {
 	#region timing related
 
 	//method used to "clamp" volume to range 0-ySegments
-	private float convertTiming(float oldTiming){
+	private float convertTiming(float yDist){
 		//0.1623
-		return Mathf.Floor((getYSegments()-((oldTiming - 0.1623f) / (3.2f - 0.1623f) * (getYSegments() - 0) + 0)));
+		
+		float test = Mathf.Floor((getYSegments()-((yDist - 0.1623f) / (3.2f - 0.1623f) * (getYSegments() - 0) + 0)));
+		//print("converted timing: " + test);
+		return test;
 	}
 
 	#endregion
