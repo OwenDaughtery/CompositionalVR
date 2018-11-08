@@ -29,10 +29,37 @@ public class GridManager : MonoBehaviour {
 
 	//32 = 12 and 25
 	//24 = 12
-	private static int ySegments = 16;
+	private static int ySegments = 32;
 
 	//The list of possible notes to play, always includes none at start.
-	public enum Notes {none, C4, D4, E4, F4, G4, A4, B4, C5, D5, E5, F5, G5, A5, B5};
+	public enum Notes {none, C4, Cs4, D4, Ds4, E4, F4, Fs4, G4, Gs4, A4, As4, B4, C5, Cs5, D5, Ds5, E5, F5, Fs5, G5, Gs5, A5, As5, B5, C6};
+	public static Dictionary<Notes, float> noteToFreq = new Dictionary<Notes, float>{
+		{Notes.C4, 261.626f},
+		{Notes.Cs4, 277.183f},
+		{Notes.D4, 293.665f},
+		{Notes.Ds4, 311.127f},
+		{Notes.E4, 329.628f},
+		{Notes.F4, 349.228f},
+		{Notes.Fs4, 369.994f},
+		{Notes.G4, 391.995f},
+		{Notes.Gs4, 415.305f},
+		{Notes.A4, 440.000f},
+		{Notes.As4, 466.164f},
+		{Notes.B4, 493.883f},
+		{Notes.C5, 523.251f},
+		{Notes.Cs5, 554.365f},
+		{Notes.D5, 587.330f},
+		{Notes.Ds5, 622.254f},
+		{Notes.E5, 659.255f},
+		{Notes.F5, 698.456f},
+		{Notes.Fs5, 739.989f},
+		{Notes.G5, 783.991f},
+		{Notes.Gs5, 830.609f},
+		{Notes.A5, 880.000f},
+		{Notes.As5, 932.328f},
+		{Notes.B5, 987.767f},
+		{Notes.C6, 1046.50f}
+	};
 
 	#endregion
 
@@ -63,8 +90,12 @@ public class GridManager : MonoBehaviour {
 		for (int i = 0; i < numberOfSegments; i++){
 			GameObject noteBoundary = objectPooler.spawnFromPool("NoteBoundary", Vector3.zero, gameObject.transform);
 			noteBoundaries.Add(noteBoundary);
-
-			noteBoundary.transform.eulerAngles = new Vector3(0f, i*segmentIncrement, 90f);
+			//noteBoundary.transform.position.Set(noteBoundary.transform.position.x+5,noteBoundary.transform.position.y,noteBoundary.transform.position.z);
+			float eularAngleValue = i*segmentIncrement;
+			if(eularAngleValue<0){
+				eularAngleValue+=360;
+			}
+			noteBoundary.transform.eulerAngles = new Vector3(0f, eularAngleValue, 90f);
 			noteBoundary.transform.position = rotateNoteBoundary(noteBoundary.transform.position, i*segmentIncrement);
 //			Color currentColour = noteBoundary.GetComponent<Renderer>().material.color;
 //			noteBoundary.GetComponent<Renderer>().material.color= new Color(currentColour.r, currentColour.g,currentColour.b,0.0f);
@@ -96,6 +127,10 @@ public class GridManager : MonoBehaviour {
 	}
 
 	private Vector3 rotateNoteBoundary(Vector3 pos, float theta){
+		/*Quaternion rotation = Quaternion.Euler(0,theta,0);
+		Vector3 myVector = pos;
+		Vector3 rotateVector = rotation * myVector;
+		return rotateVector;*/
 		pos.x= 2.5f * Mathf.Sin(theta* Mathf.Deg2Rad);
 		pos.z=2.5f * Mathf.Cos(theta* Mathf.Deg2Rad);
 		return pos;
@@ -134,31 +169,19 @@ public class GridManager : MonoBehaviour {
 	public void showNoteBoundaries(Notes lastNote, Notes newNote){
 		int lastNoteID = (int)lastNote-1;
 		int newNoteID = (int)newNote-1;
-		if(lastNoteID==(Notes.GetNames(typeof(Notes)).Length-2) && newNoteID<lastNoteID){
-			//print("branch 1");
-			noteBoundaries[(Notes.GetNames(typeof(Notes)).Length-2)].SetActive(true);
-			/*for (int i = 0; i < newNoteID; i++)
-			{
-				noteBoundaries[i].SetActive(true);
-				//fadingInNoteBoundaries.Add(noteBoundaries[i]);
-			}*/
+		int lengthOfNotes = Notes.GetNames(typeof(Notes)).Length-2;
+
+		if((newNoteID==0 && lastNoteID==lengthOfNotes-1) || (lastNoteID==0 && newNoteID==lengthOfNotes-1)){
+
+			noteBoundaries[6].SetActive(true);
+		}else if(lastNoteID<newNoteID){
+	
+			noteBoundaries[(newNoteID+6)%lengthOfNotes].SetActive(true);
+		}else if(lastNoteID>=newNoteID){
+		
+			noteBoundaries[(newNoteID+7)%lengthOfNotes].SetActive(true);
 		}
-		else if(lastNoteID<newNoteID){
-			//print("branch 2");
-			for (int i = lastNoteID+1; i < newNoteID+1; i++){
-				noteBoundaries[(i+3)%(Notes.GetNames(typeof(Notes)).Length-2)].SetActive(true);
-				//fadingInNoteBoundaries.Add(noteBoundaries[(i+3)%(Notes.GetNames(typeof(Notes)).Length-2)]);
-			}
-		}else if(lastNoteID>newNoteID){
-			//print("branch 3");
-			for (int i = lastNoteID+1; i > newNoteID+1; i--)
-			{
-				noteBoundaries[(i+2)%(Notes.GetNames(typeof(Notes)).Length-2)].SetActive(true);
-				//fadingInNoteBoundaries.Add(noteBoundaries[(i+2)%(Notes.GetNames(typeof(Notes)).Length-2)]);
-			}
-		}else{
-			Debug.LogError("showNoteBoundaries found inconsistent branch");
-		}
+		
 
 	}
 

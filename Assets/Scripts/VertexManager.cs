@@ -41,6 +41,7 @@ public class VertexManager : MonoBehaviour, IPooledObject{
 	[SerializeField]
 	private GridManager.Notes vertexNote;
 
+
 	//=====End Sound Variables=====
 
 	#endregion
@@ -144,7 +145,7 @@ public class VertexManager : MonoBehaviour, IPooledObject{
 			//print("controller position: " + gameObject.transform.parent.transform.position);
 			parentsLineManager.moveLineVertex(vertexID, gameObject.transform.position, parentsRotation);
 			tracerUpdate();
-			//noteBoundaryUpdate(getVertexNote());
+			noteBoundaryUpdate(getVertexNote());
 			
 			
 		}
@@ -334,9 +335,9 @@ public class VertexManager : MonoBehaviour, IPooledObject{
 		//OSC Send
 		List<string> args = new List<string>();
 		args.Add(volume.ToString());
-		args.Add(((int)note-1).ToString());
+		args.Add(GridManager.noteToFreq[note].ToString());
 		args.Add(length.ToString());
-		//print(((int)note-1).ToString());
+		
 		OSCHandler.Instance.SendMessageToClient("SuperCollider", "/play"+voice, args);
 	}
 
