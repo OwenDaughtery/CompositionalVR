@@ -51,7 +51,7 @@ public class LineManager : MonoBehaviour {
 
 		localRotation = gameObject.transform.eulerAngles.y;
 		timingDict = new Dictionary<float, List<VertexManager>>();
-		for (int i = 0; i <= GridManager.getYSegments(); i++){
+		for (int i = -1; i <= GridManager.getYSegments(); i++){
 			timingDict[i] = new List<VertexManager>();
 		}
 		lastPlayedVertex = -1;
@@ -65,6 +65,7 @@ public class LineManager : MonoBehaviour {
 
 		boxColliderManager = this.GetComponent<BoxColliderManager>();
 		pulseManager.activateLineManager(this);
+
 
 	}
 
@@ -494,49 +495,59 @@ public class LineManager : MonoBehaviour {
 
 	//method called by pulse manager to calculate a pulse should be on this line renderer.
 	public Vector3 interpole(float height, bool playVertex){
-		
-
-		//get all of the children, even ones attached to controllers.
-		List<GameObject> childrenVertices = getAllChildrenVerticesForInterpole();
-		childrenVertices.Sort(sortByVertexID);
-		//first 1/3 of method used for deducing which 2 vertices the pulse should be between based on a given height.
 		float lowerBoundTiming = float.MinValue;
 		float upperBoundTiming = float.MaxValue;
 		int lowerBoundIndex = 0;
 		int upperBoundIndex = 0;
-		foreach (GameObject Vertex in childrenVertices){
-			VertexManager currentVertexManager = Vertex.GetComponent<VertexManager>();
-			if(currentVertexManager.getVertexTiming()>=lowerBoundTiming && currentVertexManager.getVertexTiming()<=height){
-				lowerBoundTiming = currentVertexManager.getVertexTiming();
-				lowerBoundIndex=currentVertexManager.getVertexID();
-			}
-			if(currentVertexManager.getVertexTiming()<upperBoundTiming && currentVertexManager.getVertexTiming()>height && currentVertexManager.getVertexTiming()!=upperBoundTiming){
-				upperBoundTiming = currentVertexManager.getVertexTiming();
-				upperBoundIndex = currentVertexManager.getVertexID();
-			}
-			
-		} 
-
 		int flooredHeight = Mathf.FloorToInt(height);
+		print(flooredHeight);
 
-		if(lastHeight>flooredHeight){
-			if(playVertex){
-				foreach (VertexManager vm in timingDict[GridManager.getYSegments()]){
-					if(vm.getVertexID()!=attachedLR.positionCount-1){
-						vm.playVertex();
+		if(flooredHeight==-1){
+			
+		}else{
+
+			//get all of the children, even ones attached to controllers.
+			List<GameObject> childrenVertices = getAllChildrenVerticesForInterpole();
+			childrenVertices.Sort(sortByVertexID);
+			//first 1/3 of method used for deducing which 2 vertices the pulse should be between based on a given height.
+
+			
+			foreach (GameObject Vertex in childrenVertices){
+				VertexManager currentVertexManager = Vertex.GetComponent<VertexManager>();
+				if(currentVertexManager.getVertexTiming()>=lowerBoundTiming && currentVertexManager.getVertexTiming()<=height){
+					lowerBoundTiming = currentVertexManager.getVertexTiming();
+					lowerBoundIndex=currentVertexManager.getVertexID();
+				}
+				if(currentVertexManager.getVertexTiming()<upperBoundTiming && currentVertexManager.getVertexTiming()>height && currentVertexManager.getVertexTiming()!=upperBoundTiming){
+					upperBoundTiming = currentVertexManager.getVertexTiming();
+					upperBoundIndex = currentVertexManager.getVertexID();
+				}
+				
+			} 
+
+		
+			
+
+			if(lastHeight>flooredHeight){
+				if(playVertex){
+					foreach (VertexManager vm in timingDict[GridManager.getYSegments()]){
+						if(vm.getVertexID()!=attachedLR.positionCount-1){
+							vm.playVertex();
+						}
 					}
 				}
-			}
-		}else if(lastHeight<flooredHeight){
+			}else if(lastHeight<flooredHeight){
 
-			float diffOfHeights = flooredHeight - lastHeight;
-			if(playVertex){
-				foreach (VertexManager vm in timingDict[flooredHeight]){
-					vm.playVertex();	
+				float diffOfHeights = flooredHeight - lastHeight;
+				if(playVertex){
+					foreach (VertexManager vm in timingDict[flooredHeight]){
+						vm.playVertex();	
+					}
 				}
 			}
 		}
 		lastHeight = flooredHeight;
+
 		/*
 		//second 1/3 of method used for deciding which vertices should be played, if at all based off a passed boolean variable.
 		if(lowerBoundIndex>lastPlayedVertex){
@@ -552,16 +563,21 @@ public class LineManager : MonoBehaviour {
 			
 			lastPlayedVertex = -1;
 		} */
-
-
-		//third 1/3 of method used for calculating which part of the line the pulse should be at.
 		float difference = upperBoundTiming - lowerBoundTiming;
 		float segment = 1/difference;
 		float leftover = height - lowerBoundTiming;
 		int numberOfDivs = Mathf.FloorToInt(leftover);
 		float t = (numberOfDivs * segment) + ((leftover%1) / difference);
 
-		return Vector3.Lerp(PulseTranslation(attachedLR.GetPosition(lowerBoundIndex)),PulseTranslation(attachedLR.GetPosition(upperBoundIndex)), t);
+		if(flooredHeight==-1){
+			//lead on pulse:
+			print("testttinnggg");
+			return Vector3.Lerp(PulseTranslation(attachedLR.GetPosition(0)),PulseTranslation(attachedLR.GetPosition(1)),1-(height*-1));
+		}else{
+
+			return Vector3.Lerp(PulseTranslation(attachedLR.GetPosition(lowerBoundIndex)),PulseTranslation(attachedLR.GetPosition(upperBoundIndex)), t);
+			
+		}
 	}
 
 	#endregion

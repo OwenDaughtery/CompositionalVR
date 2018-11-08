@@ -14,31 +14,36 @@ public class PulseManager : MonoBehaviour {
 	//a list to hold all the line managers in the game
 	private List<LineManager> lineManagers = new List<LineManager>();
 	//a dictionary to hold each line manager and it's pulse (if it has one)
-	private Dictionary<LineManager, GameObject> LMtoPulse = new Dictionary<LineManager, GameObject>();
+	private Dictionary<LineManager, List<GameObject>> LMtoPulse = new Dictionary<LineManager, List<GameObject>>();
+	private Dictionary<GameObject, float> PulseToHeight = new Dictionary<GameObject, float>();
 	//the object pool to get pulses from
 	private ObjectPooler objectPooler;
 
 	#endregion
 
 	void Start () {
+		
 		GameObject[] baseLines = GameObject.FindGameObjectsWithTag("BaseLine");
-		/*foreach (GameObject baseLine in baseLines){
-			lineManagers.Add(baseLine.GetComponent<LineManager>());
-		}*/
-		height=0;
-		speed = GridManager.getYSegments()/3;
-		objectPooler = ObjectPooler.Instance;
 
+		foreach (GameObject baseLine in baseLines){
+			lineManagers.Add(baseLine.GetComponent<LineManager>());
+		}
+		height=0;
+		speed = GridManager.getYSegments()/10;
+		objectPooler = ObjectPooler.Instance;
 		foreach (LineManager LM in lineManagers){
-			LMtoPulse.Add(LM, null);
+			LMtoPulse.Add(LM, new List<GameObject>());
 		}
 	}
 	
 	void Update () {
 		//update the height
-		height += Time.deltaTime * speed;
-		if(height>=GridManager.getYSegments()){
-			height=0;
+		List<GameObject> keys = new List<GameObject> (PulseToHeight.Keys);
+		foreach(GameObject key in keys) {
+			PulseToHeight[key] = PulseToHeight[key]+(Time.deltaTime * speed);
+			if(PulseToHeight[key]>=GridManager.getYSegments()){
+				PulseToHeight[key] = -1 ;
+			}
 		}
 		updatePulses();
 	}
@@ -52,12 +57,13 @@ public class PulseManager : MonoBehaviour {
 				LMtoPulse[lm].transform.position = newPulsePos;
 			}
 		}*/
-		foreach(KeyValuePair<LineManager, GameObject> pair in LMtoPulse){
-			float rotation = pair.Key.getLocalRotation();
-			newPulsePos = pair.Key.interpole(height, (pair.Value!=null));
-			newPulsePos = pair.Key.rotateVertex(newPulsePos, rotation);
-			if(pair.Value){
-				pair.Value.transform.position = newPulsePos;
+		foreach(KeyValuePair<LineManager, List<GameObject>> pair in LMtoPulse){
+			foreach (GameObject pulse in pair.Value){
+				float rotation = pair.Key.getLocalRotation();
+				newPulsePos = pair.Key.interpole(PulseToHeight[pulse], (pair.Value!=null));
+				newPulsePos = pair.Key.rotateVertex(newPulsePos, rotation);
+				pulse.transform.position = newPulsePos;
+				
 			}
 		}
 	}
@@ -67,15 +73,21 @@ public class PulseManager : MonoBehaviour {
 	//"create" a pulse and add it to the dictionary.
 	public void activateLineManager(LineManager newLM){
 		GameObject pulse = createPulse(newLM);
-		LMtoPulse[newLM] = pulse;
+		
+		PulseToHeight.Add(pulse, -1f);
+		print(LMtoPulse[newLM]);
+
+		(LMtoPulse[newLM]).Add(pulse);
+		
 	}
 
 	//take a pulse and return it to the pool, then remove it from the dictionary.
+	/*
 	public void deactivateLineManager(LineManager LM){
 		GameObject pulse = LMtoPulse[LM];
 		LMtoPulse[LM] = null;
 		objectPooler.returnToPool("Pulse", pulse);
-	}
+	} */
 
 	//get a pulse object from the pool.
 	private GameObject createPulse(LineManager LM){

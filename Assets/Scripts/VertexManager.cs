@@ -67,7 +67,7 @@ public class VertexManager : MonoBehaviour, IPooledObject{
 		float oldTiming = getVertexTiming();
 		
 		if(newVertexTiming<0){
-			vertexTiming = 0;
+			vertexTiming = -1;
 		}else{
 			vertexTiming = newVertexTiming;	
 		}
@@ -319,6 +319,7 @@ public class VertexManager : MonoBehaviour, IPooledObject{
 	#endregion
 
 	public void playVertex(){
+		print("entering play vertex");
 		lightUpVertex(parentsLineManager.getColourOfVoice());
 		GridManager.Notes note;
 		float timing;
