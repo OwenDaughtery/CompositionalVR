@@ -16,6 +16,7 @@ TagManager:
   - NoteBoundary
   - Grid
   - LineCollider
+  - AI
   layers:
   - Default
   - TransparentFX

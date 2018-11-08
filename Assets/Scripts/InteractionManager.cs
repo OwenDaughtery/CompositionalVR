@@ -16,6 +16,8 @@ public class InteractionManager : MonoBehaviour {
 	//the current vertex being handled (if there is one)
 	private GameObject currentGameObject = null;
 	private GameObject controller = null;
+	[SerializeField]
+	private AISystemManager AI;
 	#endregion
 
 	void Awake(){
@@ -65,6 +67,7 @@ public class InteractionManager : MonoBehaviour {
 			return;
 		}else{
 			if(currentRigidBody.GetComponent<VertexManager>().getBaseLineParent().GetComponent<LineManager>().getNumberOfVertices()-1==currentRigidBody.GetComponent<VertexManager>().getVertexID()){
+				print("cant pick up last vertex");
 				resetVariables();
 				//if the id is the last in the line, don't do anything
 			}else{
@@ -86,14 +89,12 @@ public class InteractionManager : MonoBehaviour {
 				if(!isEditable(currentVertexManager.getVertexID(), currentVertexManager.getBaseLineParent().gameObject)){
 					VertexManager newlyCreatedVertexManager = addNewVertex().GetComponent<VertexManager>();
 					newlyCreatedVertexManager.moveTo(oldPos);
+					//AI.updateMasterScore();
 
 				}else{
 					
 				}
 			}
-
-		
-
 		}
 	}
 
@@ -218,7 +219,7 @@ public class InteractionManager : MonoBehaviour {
 			yClamper(out clampedY, out clampedTiming);
 			Vector3 posToSnap = new Vector3(currentGameObject.transform.position.x, clampedY, currentGameObject.transform.position.z);
 			Vector3 snappedY = snap();
-
+			//AI.updateMasterScore();
 			return currentVertexManager.getParentsLineManager().addVertex(snappedY, currentVertexManager.getVertexID(), currentGameObject);
 		}
 	}

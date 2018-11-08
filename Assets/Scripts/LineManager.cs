@@ -82,6 +82,10 @@ public class LineManager : MonoBehaviour {
 		return localRotation;
 	}
 
+	public Dictionary<float, List<VertexManager>> getTimingDict(){
+		return timingDict;
+
+	}
 
 	public void updateTimingDict(float oldTiming, float newTiming, VertexManager vm){
 		timingDict[oldTiming].Remove(vm);
