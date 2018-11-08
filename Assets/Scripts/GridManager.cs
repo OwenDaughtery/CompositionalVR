@@ -23,6 +23,7 @@ public class GridManager : MonoBehaviour {
 	private List<GameObject> noteBoundaries = new List<GameObject>();
 	private List<GameObject> fadingInNoteBoundaries = new List<GameObject>();
 	private List<GameObject> fadingOutNoteBoundaries = new List<GameObject>();
+	private Dictionary<GameObject, float> fadeOutDictionary = new Dictionary<GameObject, float>();
 	//The vertexManager for any specific vertex (sphere) at any given point
 	private VertexManager vertexManager;
 	private float fadeSpeed = 0.25f;
@@ -78,8 +79,22 @@ public class GridManager : MonoBehaviour {
 	void Update () {
 		//every frame, call the method that will update the variables of all the vertices in the environment.
 		getVertexStats();
-		fadeInNoteBoundaries();
-		fadeOutNoteBoundaries();
+		//fadeInNoteBoundaries();
+		//fadeOutNoteBoundaries();
+		tempFadeOut();
+	}
+
+	public void tempFadeOut(){
+		List<GameObject> keys = new List<GameObject> (fadeOutDictionary.Keys);
+		foreach(GameObject key in keys) {
+			print(fadeOutDictionary[key]);
+			fadeOutDictionary[key] = fadeOutDictionary[key]-0.01f;
+			if(fadeOutDictionary[key]<=0){
+				key.SetActive(false);
+				fadeOutDictionary.Remove(key);
+			}
+		}
+		
 	}
 
 	private void createNoteBoundaries(){
@@ -127,10 +142,6 @@ public class GridManager : MonoBehaviour {
 	}
 
 	private Vector3 rotateNoteBoundary(Vector3 pos, float theta){
-		/*Quaternion rotation = Quaternion.Euler(0,theta,0);
-		Vector3 myVector = pos;
-		Vector3 rotateVector = rotation * myVector;
-		return rotateVector;*/
 		pos.x= 2.5f * Mathf.Sin(theta* Mathf.Deg2Rad);
 		pos.z=2.5f * Mathf.Cos(theta* Mathf.Deg2Rad);
 		return pos;
@@ -174,12 +185,16 @@ public class GridManager : MonoBehaviour {
 		if((newNoteID==0 && lastNoteID==lengthOfNotes-1) || (lastNoteID==0 && newNoteID==lengthOfNotes-1)){
 
 			noteBoundaries[6].SetActive(true);
+			fadeOutDictionary.Add(noteBoundaries[6], 1f);
+			
 		}else if(lastNoteID<newNoteID){
 	
 			noteBoundaries[(newNoteID+6)%lengthOfNotes].SetActive(true);
+			fadeOutDictionary.Add(noteBoundaries[(newNoteID+6)%lengthOfNotes], 1f);
 		}else if(lastNoteID>=newNoteID){
 		
 			noteBoundaries[(newNoteID+7)%lengthOfNotes].SetActive(true);
+			fadeOutDictionary.Add(noteBoundaries[(newNoteID+7)%lengthOfNotes], 1f);
 		}
 		
 
