@@ -328,17 +328,18 @@ public class VertexManager : MonoBehaviour, IPooledObject{
 	#endregion
 
 	public void playVertex(){
-	
-		lightUpVertex(parentsLineManager.getColourOfVoice());
-		GridManager.Notes note;
-		float timing;
-		float volume;
-		float length;
-		string voice;
-		formatVertex(out note, out timing, out volume, out length, out voice);
-		contactSC(note,volume, length, voice);
+		if(getVertexID()>1 && getVertexID()!=getParentsLineManager().getNumberOfVertices()-1){
+			lightUpVertex(parentsLineManager.getColourOfVoice());
+			GridManager.Notes note;
+			float timing;
+			float volume;
+			float length;
+			string voice;
+			formatVertex(out note, out timing, out volume, out length, out voice);
+			contactSC(note,volume, length, voice);
 
-		print(note.ToString() + " " + volume.ToString());
+			print(note.ToString() + " " + volume.ToString());
+		}
 	}
 
 	private void contactSC(GridManager.Notes note, float volume, float length, string voice){
