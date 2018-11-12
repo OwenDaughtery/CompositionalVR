@@ -120,15 +120,15 @@ public class GridManager : MonoBehaviour {
 	} 
 
 	public static int getClosestTiming(float y){
-		int lastValue = 0;
+		int lastValue = getYSegments()+1;
 		foreach(KeyValuePair<float, int> pair in YToTiming){
-			
-			if(y>pair.Key){
-				return lastValue;
-			}	
-			lastValue = pair.Value;
+				
+		if(y>pair.Key){
+			return (int)lastValue;
+		}	
+		lastValue = pair.Value;
 		} 
-		return lastValue;
+		return (int)lastValue;
 	}
 
 	private void createNoteBoundaries(){
@@ -161,7 +161,7 @@ public class GridManager : MonoBehaviour {
 			timingBoundaries.Add(timingBoundary);
 			float yHeight = 3.3f-(i*segmentIncrement);
 			timingBoundary.transform.position = new Vector3(0f,yHeight,0f);
-			timingBoundary.SetActive(true);
+			timingBoundary.SetActive(false);//should be true, just debugging.
 		}
 	}
 
@@ -261,6 +261,8 @@ public class GridManager : MonoBehaviour {
 				vertexManager.setVertexAngle(vertexAngle);
 				vertexManager.setVertexNote(convertAngle(vertexAngle));
 			}
+		
+
 		}
 	}
 
@@ -284,15 +286,7 @@ public class GridManager : MonoBehaviour {
 		if(YToTiming.TryGetValue(yDist, out test)){
 			test = YToTiming[yDist];
 		}else{
-			int lastValue = 0;
-			foreach(KeyValuePair<float, int> pair in YToTiming){
-				
-				if(yDist>pair.Key){
-					test = lastValue;
-					return test;
-				}	
-				lastValue = pair.Value;
-			} 
+			return getClosestTiming(yDist);
 		}
 		//float test = Mathf.Floor((getYSegments()-((yDist - 0.1623f) / (3.3f - 0.1623f) * (getYSegments() - 0) + 0)));
 		//print("converted timing: " + test);

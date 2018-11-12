@@ -64,6 +64,7 @@ public class VertexManager : MonoBehaviour, IPooledObject{
 	}
 
 	public void setVertexTiming(float newVertexTiming){
+		
 		float oldTiming = getVertexTiming();
 		
 		if(newVertexTiming<0){

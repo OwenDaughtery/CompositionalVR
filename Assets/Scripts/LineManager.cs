@@ -238,6 +238,11 @@ public class LineManager : MonoBehaviour {
 		int vertexID=0;
 		foreach (var vert in currentVerts){
 			VertexManager newVert = drawVert(vert, vertexID, true).GetComponent<VertexManager>();
+			if(vertexID==0){
+				newVert.setVertexTiming(-1);
+			}else if(vertexID==getNumberOfVertices()-1){
+				newVert.setVertexTiming(GridManager.getYSegments());
+			}
 			vertexID++;
 		}	
 	}
@@ -500,60 +505,60 @@ public class LineManager : MonoBehaviour {
 		int lowerBoundIndex = 0;
 		int upperBoundIndex = 0;
 		int flooredHeight = Mathf.FloorToInt(height);
-		
-		if(flooredHeight==-1){
-			
-		}else{
-
-			//get all of the children, even ones attached to controllers.
-			List<GameObject> childrenVertices = getAllChildrenVerticesForInterpole();
-			childrenVertices.Sort(sortByVertexID);
-			//first 1/3 of method used for deducing which 2 vertices the pulse should be between based on a given height.
-
-			
-			foreach (GameObject Vertex in childrenVertices){
-				VertexManager currentVertexManager = Vertex.GetComponent<VertexManager>();
-				if(currentVertexManager.getVertexTiming()>=lowerBoundTiming && currentVertexManager.getVertexTiming()<=height){
-					lowerBoundTiming = currentVertexManager.getVertexTiming();
-					lowerBoundIndex=currentVertexManager.getVertexID();
-				}
-				if(currentVertexManager.getVertexTiming()<upperBoundTiming && currentVertexManager.getVertexTiming()>height && currentVertexManager.getVertexTiming()!=upperBoundTiming){
-					upperBoundTiming = currentVertexManager.getVertexTiming();
-					upperBoundIndex = currentVertexManager.getVertexID();
-				}
-				
-			} 
 
 		
-			
-
-			/*if(lastHeight>flooredHeight){
-				if(playVertex){
-					foreach (VertexManager vm in timingDict[GridManager.getYSegments()]){
-						if(vm.getVertexID()!=attachedLR.positionCount-1){
-							vm.playVertex();
-						}
-					}
-				}
-			}else */
 		
-			if(lastHeight>flooredHeight && flooredHeight==0){
-				if(playVertex){
-					foreach(VertexManager vm in timingDict[0]){
+
+		//get all of the children, even ones attached to controllers.
+		List<GameObject> childrenVertices = getAllChildrenVerticesForInterpole();
+		childrenVertices.Sort(sortByVertexID);
+		//first 1/3 of method used for deducing which 2 vertices the pulse should be between based on a given height.
+
+		foreach (GameObject Vertex in childrenVertices){
+			VertexManager currentVertexManager = Vertex.GetComponent<VertexManager>();
+			if(currentVertexManager.getVertexTiming()>=lowerBoundTiming && currentVertexManager.getVertexTiming()<=height){
+				lowerBoundTiming = currentVertexManager.getVertexTiming();
+				lowerBoundIndex=currentVertexManager.getVertexID();
+			}
+			if(currentVertexManager.getVertexTiming()<upperBoundTiming && currentVertexManager.getVertexTiming()>height && currentVertexManager.getVertexTiming()!=upperBoundTiming){
+				upperBoundTiming = currentVertexManager.getVertexTiming();
+				upperBoundIndex = currentVertexManager.getVertexID();
+			}
+			
+		} 
+		//print("the lower bound index is: " + lowerBoundIndex);
+		//print("the upper bound index is: " + upperBoundIndex);
+
+	
+		
+
+		/*if(lastHeight>flooredHeight){
+			if(playVertex){
+				foreach (VertexManager vm in timingDict[GridManager.getYSegments()]){
+					if(vm.getVertexID()!=attachedLR.positionCount-1){
 						vm.playVertex();
 					}
 				}
 			}
-			else if(lastHeight<flooredHeight){
-				
-				float diffOfHeights = flooredHeight - lastHeight;
-				if(playVertex && flooredHeight<GridManager.getYSegments()-1){
-					foreach (VertexManager vm in timingDict[flooredHeight]){
-						vm.playVertex();	
-					}
+		}else */
+	
+		if(lastHeight>flooredHeight && flooredHeight==0){
+			if(playVertex){
+				foreach(VertexManager vm in timingDict[0]){
+					vm.playVertex();
 				}
 			}
 		}
+		else if(lastHeight<flooredHeight){
+			
+			float diffOfHeights = flooredHeight - lastHeight;
+			if(playVertex && flooredHeight<GridManager.getYSegments()-1){
+				foreach (VertexManager vm in timingDict[flooredHeight]){
+					vm.playVertex();	
+				}
+			}
+		}
+		
 		if(flooredHeight!=-1){
 			lastHeight = flooredHeight;
 		}
