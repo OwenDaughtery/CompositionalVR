@@ -25,16 +25,23 @@ public class GridManager : MonoBehaviour {
 	private List<GameObject> fadingOutNoteBoundaries = new List<GameObject>();
 	private Dictionary<GameObject, float> fadeOutDictionary = new Dictionary<GameObject, float>();
 	//The vertexManager for any specific vertex (sphere) at any given point
+
+	/*plan is to remove these soon, they are temp debuggin */
+	private List<GameObject> timingBoundaries = new List<GameObject>();
+	
 	private VertexManager vertexManager;
 	private float fadeSpeed = 0.25f;
 
 	//32 = 12 and 25
 	//24 = 12
-	private static int ySegments = 32;
+	private static int ySegments = 16;
+
+	private static Dictionary<float, int> YToTiming = new Dictionary<float,int>(); 
+	private static Dictionary<int, float> TimingToY = new Dictionary<int, float>();
 
 	//The list of possible notes to play, always includes none at start.
 	public enum Notes {none, C4, Cs4, D4, Ds4, E4, F4, Fs4, G4, Gs4, A4, As4, B4, C5, Cs5, D5, Ds5, E5, F5, Fs5, G5, Gs5, A5, As5, B5, C6};
-	public static Dictionary<int, float> timingToY = new Dictionary<int, float>();
+
 	public static Dictionary<Notes, float> noteToFreq = new Dictionary<Notes, float>{
 		{Notes.C4, 261.626f},
 		{Notes.Cs4, 277.183f},
@@ -72,13 +79,15 @@ public class GridManager : MonoBehaviour {
 	void Start () {
 		float yIncrement = 3.3f/getYSegments();
 		for (int i = 0; i <= getYSegments(); i++){
-			timingToY.Add(i,3.3f-(i*yIncrement));
+			YToTiming.Add(3.3f-(i*yIncrement),i);
+			TimingToY.Add(i, 3.3f-(i*yIncrement));
 		}
 		objectPooler = ObjectPooler.Instance;
 		xVector = new Vector3(0f, 0f, 0f);
 		yVector = new Vector3(0f, 0f, 0f);
 		zVector = new Vector3(0f, 0f, 0f);
 		createNoteBoundaries();
+		createTimingBoundaries();
 	}
 	
 	void Update () {
@@ -92,7 +101,7 @@ public class GridManager : MonoBehaviour {
 	public void tempFadeOut(){
 		List<GameObject> keys = new List<GameObject> (fadeOutDictionary.Keys);
 		foreach(GameObject key in keys) {
-			print(fadeOutDictionary[key]);
+			//print(fadeOutDictionary[key]);
 			fadeOutDictionary[key] = fadeOutDictionary[key]-0.01f;
 			if(fadeOutDictionary[key]<=0){
 				key.SetActive(false);
@@ -100,6 +109,26 @@ public class GridManager : MonoBehaviour {
 			}
 		}
 		
+	}
+
+	public static float getTimingFromY(float y){
+		return YToTiming[y];
+	}
+
+	public static float getYFromTiming(int timing){
+		return TimingToY[timing];
+	} 
+
+	public static int getClosestTiming(float y){
+		int lastValue = 0;
+		foreach(KeyValuePair<float, int> pair in YToTiming){
+			
+			if(y>pair.Key){
+				return lastValue;
+			}	
+			lastValue = pair.Value;
+		} 
+		return lastValue;
 	}
 
 	private void createNoteBoundaries(){
@@ -121,29 +150,19 @@ public class GridManager : MonoBehaviour {
 //			noteBoundary.GetComponent<Renderer>().material.color= new Color(currentColour.r, currentColour.g,currentColour.b,0.0f);
 			noteBoundary.SetActive(false);
 		}
-		/*
-		foreach (GameObject item in noteBoundaries){
-			MeshRenderer renderer = item.GetComponent<MeshRenderer>();
- 			Material material = renderer.material;
- 
- 			material.SetFloat("_Mode", 4f);
-
-			material.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
-			material.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
-			material.SetInt("_ZWrite", 0);
-			material.DisableKeyword("_ALPHATEST_ON");
-			material.EnableKeyword("_ALPHABLEND_ON");
-			material.DisableKeyword("_ALPHAPREMULTIPLY_ON");
-			material.renderQueue = 3000;
-			for (int i = 100; i>0; i--){
-			Color32 col = renderer.material.GetColor("_Color");
- 			col.a = (byte) i;
- 			renderer.material.SetColor("_Color", col);
-								
-			}
-			
-		}*/
 		
+	}
+
+	private void createTimingBoundaries(){
+		float segmentIncrement = 3.3f/getYSegments();
+		float numberOfSegments = getYSegments();
+		for(int i = 0; i < numberOfSegments; i++){
+			GameObject timingBoundary = objectPooler.spawnFromPool("NoteBoundary", Vector3.zero, gameObject.transform);
+			timingBoundaries.Add(timingBoundary);
+			float yHeight = 3.3f-(i*segmentIncrement);
+			timingBoundary.transform.position = new Vector3(0f,yHeight,0f);
+			timingBoundary.SetActive(true);
+		}
 	}
 
 	private Vector3 rotateNoteBoundary(Vector3 pos, float theta){
@@ -190,20 +209,25 @@ public class GridManager : MonoBehaviour {
 		if((newNoteID==0 && lastNoteID==lengthOfNotes-1) || (lastNoteID==0 && newNoteID==lengthOfNotes-1)){
 
 			noteBoundaries[6].SetActive(true);
-			fadeOutDictionary.Add(noteBoundaries[6], 1f);
+			if(!fadeOutDictionary.ContainsKey(noteBoundaries[6])){
+				fadeOutDictionary.Add(noteBoundaries[6], 1f);
+			}
 			
 		}else if(lastNoteID<newNoteID){
-	
-			noteBoundaries[(newNoteID+6)%lengthOfNotes].SetActive(true);
-			fadeOutDictionary.Add(noteBoundaries[(newNoteID+6)%lengthOfNotes], 1f);
+			if(!fadeOutDictionary.ContainsKey(noteBoundaries[(newNoteID+6)%lengthOfNotes])){
+				noteBoundaries[(newNoteID+6)%lengthOfNotes].SetActive(true);
+				fadeOutDictionary.Add(noteBoundaries[(newNoteID+6)%lengthOfNotes], 1f);
+			}
 		}else if(lastNoteID>=newNoteID){
-		
-			noteBoundaries[(newNoteID+7)%lengthOfNotes].SetActive(true);
-			fadeOutDictionary.Add(noteBoundaries[(newNoteID+7)%lengthOfNotes], 1f);
+			if(!fadeOutDictionary.ContainsKey(noteBoundaries[(newNoteID+7)%lengthOfNotes])){
+				noteBoundaries[(newNoteID+7)%lengthOfNotes].SetActive(true);
+				fadeOutDictionary.Add(noteBoundaries[(newNoteID+7)%lengthOfNotes], 1f);
+			}
 		}
 		
 
 	}
+
 
 	#region main
 
@@ -225,12 +249,12 @@ public class GridManager : MonoBehaviour {
 			yDist = Vector3.Distance(gameObject.transform.position, yVector);
 			zDist = Vector3.Distance(gameObject.transform.position, zVector);
 		
-			if(vertexManager!=null){
+			if(vertexManager!=null && vertexManager.getVertexID()!=0 && vertexManager.getVertexID()!=vertexManager.getParentsLineManager().getNumberOfVertices()-1){
 				//setting vertex volume by passing x^2 + z^2 to convert volume
 				vertexManager.setVertexVolume(convertVolume((xDist*xDist) + (zDist*zDist)));
 
 				//setting vertex timing by passing y distance.
-				vertexManager.setVertexTiming(convertTiming(yDist));
+				vertexManager.setVertexTiming(convertTiming(vertex.transform.position.y));
 
 				//calling calculateAngle with the vertices (sphere) x and z cordinates, and then setting the vertices note accordingly.
 				float vertexAngle = calculateAngle(vertexManager.transform.position.x, vertexManager.transform.position.z);
@@ -256,8 +280,21 @@ public class GridManager : MonoBehaviour {
 	//method used to "clamp" volume to range 0-ySegments
 	private float convertTiming(float yDist){
 		//0.1623
-		
-		float test = Mathf.Floor((getYSegments()-((yDist - 0.1623f) / (3.2f - 0.1623f) * (getYSegments() - 0) + 0)));
+		int test;
+		if(YToTiming.TryGetValue(yDist, out test)){
+			test = YToTiming[yDist];
+		}else{
+			int lastValue = 0;
+			foreach(KeyValuePair<float, int> pair in YToTiming){
+				
+				if(yDist>pair.Key){
+					test = lastValue;
+					return test;
+				}	
+				lastValue = pair.Value;
+			} 
+		}
+		//float test = Mathf.Floor((getYSegments()-((yDist - 0.1623f) / (3.3f - 0.1623f) * (getYSegments() - 0) + 0)));
 		//print("converted timing: " + test);
 		return test;
 	}

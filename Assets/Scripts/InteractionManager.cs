@@ -131,7 +131,9 @@ public class InteractionManager : MonoBehaviour {
 		//Vector3 currentPos = new Vector3(currentGameObject.transform.position.x, currentGameObject.transform.position.y, currentGameObject.transform.position.z);
 		//Vector3 currentPos = new Vector3(controller.GetComponent<SphereCollider>().transform.position.x, clampedY, controller.GetComponent<SphereCollider>().transform.position.z);
 
-		float maxY = 3.3f;
+		//=====currentPos.Set(currentPos.x, GridManager.getYFromTiming((int)clampedTiming), currentPos.z);
+		
+		/*float maxY = 3.3f;
 		float segment = 3.3f/GridManager.getYSegments();
 		float upper = segment*clampedTiming;
 		float lower = segment *(clampedTiming-1);
@@ -140,9 +142,10 @@ public class InteractionManager : MonoBehaviour {
 			currentPos.Set(currentPos.x, (maxY-lower), currentPos.z);
 		}else{
 			currentPos.Set(currentPos.x, (maxY-upper), currentPos.z);
-		}
+		}*/
 
-		currentPos = tetherToPoint(currentVertexManager, currentPos);
+		//i believe this is for the center snapping
+		//currentPos = tetherToPoint(currentVertexManager, currentPos);
 		
 		
 
@@ -153,16 +156,39 @@ public class InteractionManager : MonoBehaviour {
 	private void yClamper(out float clampedY, out float clampedTiming){
 		float siblingY;
 		float siblingTiming;
+
+
+
 		currentVertexManager.getHigherVertex(out siblingY, out siblingTiming);
-		
+
+
+		int controllersTiming = (int)currentVertexManager.getVertexTiming();
+		if(currentVertexManager.gameObject.transform.parent.transform==gameObject.transform){
+			controllersTiming = GridManager.getClosestTiming(currentVertexManager.gameObject.transform.parent.transform.position.y);
+		}
+	
+	
+		//if(controllersTiming>currentVertexManager.getVertexTiming()){
+		//	print("first not equal!");
+			//controller is out of bounds and has become desynced
+			//clampedTiming = siblingTiming;
+			//clampedY = GridManager.getYFromTiming((int)clampedTiming);
+		//}else{
 		clampedTiming = Mathf.Max(currentVertexManager.getVertexTiming(), siblingTiming);
-		clampedY = Mathf.Min(currentGameObject.transform.position.y, siblingY);
-		//print("clamped higher timing = " + clampedTiming);
+		clampedY = GridManager.getYFromTiming((int)clampedTiming);
+		//}
 
 		currentVertexManager.getLowerVertex(out siblingY, out siblingTiming);
+
 		clampedTiming = Mathf.Min(clampedTiming, siblingTiming);
-		clampedY = Mathf.Max(clampedY, siblingY);
-		//print("clamped lower timing = " + clampedTiming);
+		clampedY = GridManager.getYFromTiming((int)clampedTiming);
+		
+		if(clampedTiming>=GridManager.getYSegments()-1){
+			Debug.LogWarning("Vertex is going below valid timings");
+			clampedTiming = GridManager.getYSegments()-1;
+			clampedY = GridManager.getYFromTiming((int)clampedTiming);
+		}
+
 	}	
 
 	private Vector3 tetherToPoint(VertexManager vm, Vector3 currentPos){

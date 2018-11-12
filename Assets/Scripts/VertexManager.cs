@@ -239,11 +239,15 @@ public class VertexManager : MonoBehaviour, IPooledObject{
 	public void getHigherVertex(out float siblingY, out float siblingTiming){
 		List<GameObject> siblings = parentsLineManager.getChildrenVertices();
 		foreach (GameObject sibling in siblings){
-			if(sibling.GetComponent<VertexManager>().getVertexID()==getVertexID()-1){
-				
-				siblingTiming = sibling.GetComponent<VertexManager>().getVertexTiming();
-				siblingY = sibling.transform.position.y;
-				return;
+			int siblingID = sibling.GetComponent<VertexManager>().getVertexID();
+			if(siblingID!=0 && siblingID!=getParentsLineManager().getNumberOfVertices()-1){
+				if(siblingID==getVertexID()-1){
+					
+					//found the next vertex up
+					siblingTiming = sibling.GetComponent<VertexManager>().getVertexTiming();
+					siblingY = sibling.transform.position.y;
+					return;
+				}
 			}
 		}
 		siblingTiming = float.MinValue;
@@ -255,11 +259,15 @@ public class VertexManager : MonoBehaviour, IPooledObject{
 	public void getLowerVertex(out float siblingY, out float siblingTiming){
 		List<GameObject> siblings = parentsLineManager.getChildrenVertices();
 		foreach (GameObject sibling in siblings){
-			if(sibling.GetComponent<VertexManager>().getVertexID()==getVertexID()+1){
-				
-				siblingTiming = sibling.GetComponent<VertexManager>().getVertexTiming();
-				siblingY = sibling.transform.position.y;
-				return;
+			int siblingID = sibling.GetComponent<VertexManager>().getVertexID();
+			if(siblingID!=0 && siblingID!=getParentsLineManager().getNumberOfVertices()-1){
+				if(siblingID==getVertexID()+1){
+					
+					//found the next vertex up
+					siblingTiming = sibling.GetComponent<VertexManager>().getVertexTiming();
+					siblingY = sibling.transform.position.y;
+					return;
+				}
 			}
 		}
 		siblingTiming = float.MaxValue;
