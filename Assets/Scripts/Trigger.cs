@@ -4,21 +4,33 @@ using UnityEngine;
 
 public class Trigger : MonoBehaviour {
 
-	// Use this for initialization
-	void Start () {
-		
-	}
-	
-	// Update is called once per frame
-	void Update () {
-		
+	int startID;
+	int endID;
+
+	public void setIDs(int newStartID, int newEndID){
+		startID = newStartID;
+		endID = newEndID;
 	}
 
-	void onTriggerEnter(Collider other){
-		print("entering!");
+	public int getStartID(){
+		return startID;
 	}
 
-	void onTriggerExit(Collider other){
-		print("exiting!");
+	public int getEndID(){
+		return endID;
+	}
+
+	public void OnTriggerEnter(Collider other){
+		if(other.tag=="GameController"){
+			print("entering");
+			other.GetComponent<InteractionManager>().setHoveringBoxCollider(gameObject.transform.parent.gameObject);
+		}
+	}
+
+	public void OnTriggerExit(Collider other){
+		if(other.tag=="GameController"){
+			other.GetComponent<InteractionManager>().setHoveringBoxCollider(null);
+			print(other.gameObject.name + " is leaving collider " + gameObject.name);
+		}
 	}
 }

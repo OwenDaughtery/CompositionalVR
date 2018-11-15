@@ -26,6 +26,8 @@ public class BoxColliderManager : MonoBehaviour {
 
 
 
+
+
 	public Dictionary<int, BoxCollider> getAllBoxColliders(){
 		return IDToBC;
 	}
@@ -36,14 +38,21 @@ public class BoxColliderManager : MonoBehaviour {
 		}
 	}
 
+	public Vector3 rotateCollider(Vector3 pos, float rotationFloat){
+		Quaternion rotation = Quaternion.Euler(0,rotationFloat,0);
+		Vector3 myVector = pos;
+		Vector3 rotateVector = rotation * myVector;
+		return rotateVector;
+	}
+
 	public void addBoxCollider(int index){
 		
 		Vector3 startPoint = attachedLR.GetPosition(index);
 		Vector3 endPoint = attachedLR.GetPosition(index+1);
 		GameObject newBoxCollider = objectPooler.spawnFromPool("BoxCollider", Vector3.zero, gameObject.transform);
 		BoxCollider boxCollider = newBoxCollider.GetComponent<BoxCollider>();
-		
-		moveBoxCollder(boxCollider, startPoint, endPoint);
+		newBoxCollider.GetComponent<Trigger>().setIDs(index, index+1);
+		moveBoxCollder(newBoxCollider, boxCollider, startPoint, endPoint);
 		BoxCollider test;
 		if(IDToBC.TryGetValue(index, out test)){
 			
@@ -75,50 +84,34 @@ public class BoxColliderManager : MonoBehaviour {
 		}*/
 	}
 
-	private void moveBoxCollder(BoxCollider boxCollider, Vector3 startPoint, Vector3 endPoint){
+	private void moveBoxCollder(GameObject objectBoxCollider, BoxCollider boxCollider, Vector3 startPoint, Vector3 endPoint){
+		startPoint = lineManager.rotateVertex(startPoint, lineManager.getLocalRotation());
+		endPoint = lineManager.rotateVertex(endPoint, lineManager.getLocalRotation());
+
 		Vector3 midPoint = (startPoint + endPoint)/2;
 		boxCollider.transform.position = midPoint; 
 
 		float lineLength = Vector3.Distance(startPoint, endPoint); 
 		boxCollider.size = new Vector3(lineLength, attachedLR.endWidth+0.1f, attachedLR.endWidth+0.1f); 
 
+		
+
 		float angle = Mathf.Atan2((endPoint.z - startPoint.z), (endPoint.x - startPoint.x));
-
-		//print(Vector2.Angle(x, y));
-
-		//float zDegree = FindDegree(startPoint.x - endPoint.x, startPoint.y - endPoint.y);
-		//zDegree *=-1;
-
-		//float xDegree = FindDegree(startPoint.z - endPoint.z, startPoint.y - endPoint.y);
-
-		//float yDegree = FindDegree(startPoint.x - endPoint.x, startPoint.z - endPoint.z);
-		//yDegree *=-1;
-
-
-		//boxCollider.transform.eulerAngles = new Vector3(xDegree,yDegree,zDegree+90);
-
-		// angle now holds our answer but it's in radians, we want degrees
-		// Mathf.Rad2Deg is just a constant equal to 57.2958 that we multiply by to change radians to degrees
 		angle *= Mathf.Rad2Deg;
-	
-		//were interested in the inverse so multiply by -1
 		angle *= -1; 
-		// now apply the rotation to the collider's transform, carful where you put the angle variable
-		// in 3d space you don't wan't to rotate on your y axis
-		//boxCollider.transform.eulerAngles = new Vector3(angle, 0, 0);
-		//boxCollider.transform.Rotate(0, angle, 0);
-
 		boxCollider.transform.LookAt(startPoint);
 		Quaternion currentRot= boxCollider.transform.rotation;
 		boxCollider.transform.Rotate(0,90,0);
-		//boxCollider.transform.eulerAngles = new Vector3(0f,0f,0f);
+
+		//Vector3 pos = rotateCollider(boxCollider.transform.position, -gameObject.GetComponent<LineManager>().getLocalRotation());		
+		//boxCollider.transform.position = pos;
 
 	}
 
 	private void updateBoxColliders(){
 		for (int i = 0; i < attachedLR.positionCount-1; i++){
 			BoxCollider boxCollider = IDToBC[i];
-			moveBoxCollder(boxCollider, attachedLR.GetPosition(i), attachedLR.GetPosition(i+1));
+			moveBoxCollder(boxCollider.gameObject, boxCollider, attachedLR.GetPosition(i), attachedLR.GetPosition(i+1));
 		}
 	}
 }

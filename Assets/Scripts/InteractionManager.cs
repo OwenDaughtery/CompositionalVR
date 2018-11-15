@@ -17,6 +17,8 @@ public class InteractionManager : MonoBehaviour {
 	private GameObject currentGameObject = null;
 	private GameObject controller = null;
 	[SerializeField]
+	private GameObject hoveringBoxCollider = null;
+	[SerializeField]
 	private AISystemManager AI;
 	#endregion
 
@@ -36,6 +38,10 @@ public class InteractionManager : MonoBehaviour {
 
 	public GameObject getCurrentGameObject(){
 		return currentGameObject;
+	}
+
+	public void setHoveringBoxCollider(GameObject newBoxCollider){
+		hoveringBoxCollider = newBoxCollider;
 	}
 
 	#endregion
@@ -227,24 +233,12 @@ public class InteractionManager : MonoBehaviour {
 	//method called when user creates a new vertex while holding another
 	public GameObject addNewVertex(){
 		if(!currentRigidBody){
-			/*Dictionary<LineManager,Dictionary<int,BoxCollider>> LMToBC = collectColliders();
-
-			LineManager closestLM;
-			int closestID;
-			BoxCollider closestCollder;
-			float closestDistance = float.MaxValue;
-
-			foreach(KeyValuePair<LineManager, Dictionary<int,BoxCollider>> pair in LMToBC){
-				foreach (KeyValuePair<int, BoxCollider> pair2 in pair.Value){
-					float distance = pair.Value.C
-				}
-				newPulsePos = pair.Key.interpole(height, (pair.Value!=null));
-				if(pair.Value){
-					pair.Value.transform.position = newPulsePos;
-				}
-			}*/
-			return null;
-
+			if(hoveringBoxCollider){
+				int index = hoveringBoxCollider.GetComponent<Trigger>().getStartID();
+				return hoveringBoxCollider.transform.parent.GetComponent<LineManager>().addVertex(gameObject.transform.position, index, null);
+			}else{
+				return null;
+			}
 		}else{
 			float clampedY;
 			float clampedTiming;

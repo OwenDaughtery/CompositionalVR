@@ -48,6 +48,8 @@ public class LineManager : MonoBehaviour {
 	#endregion
 
 	void Start () {
+		
+
 
 		localRotation = gameObject.transform.eulerAngles.y;
 		timingDict = new Dictionary<float, List<VertexManager>>();
@@ -335,7 +337,10 @@ public class LineManager : MonoBehaviour {
 		//Get the vertex spheres that are children of this object
 		List<GameObject> children = getChildrenVertices();
 		//Add the selected vertex to that list (as it won't be a child of the object if it's selected), and sort the list.
-		children.Add(selectedVertex);
+		if(selectedVertex){
+			children.Add(selectedVertex);
+		}
+		
 		children.Sort(sortByVertexID);
 		
 		//for loop to go through each vertex and update it's vertexID if it's PAST the selected vertex
