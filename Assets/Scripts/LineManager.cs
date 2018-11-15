@@ -343,6 +343,7 @@ public class LineManager : MonoBehaviour {
 		
 		children.Sort(sortByVertexID);
 		
+
 		//for loop to go through each vertex and update it's vertexID if it's PAST the selected vertex
 		foreach(GameObject child in children){
 			VertexManager childsVM = child.GetComponent<VertexManager>();
@@ -355,8 +356,10 @@ public class LineManager : MonoBehaviour {
 		GameObject newVert = drawVert(pos, vertexID, false);
 		VertexManager newVertsVM = newVert.GetComponent<VertexManager>();
 		//make the new vertex's size and "length" field equal to the one currently selected
-		newVert.transform.localScale=selectedVertex.transform.lossyScale;
-		newVertsVM.setVertexLength(selectedVertex.GetComponent<VertexManager>().getVertexLength());
+		if(selectedVertex){
+			newVert.transform.localScale=selectedVertex.transform.lossyScale;
+			newVertsVM.setVertexLength(selectedVertex.GetComponent<VertexManager>().getVertexLength());
+		}
 		//add this new vertex to the dictionary of vertexmanagers with its current timing
 		timingDict[newVertsVM.getVertexTiming()].Add(newVertsVM);
 		//add this new vertex to the list of children, and sort the list again.

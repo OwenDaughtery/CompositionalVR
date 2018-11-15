@@ -234,12 +234,14 @@ public class InteractionManager : MonoBehaviour {
 	public GameObject addNewVertex(){
 		if(!currentRigidBody){
 			if(hoveringBoxCollider){
-				int index = hoveringBoxCollider.GetComponent<Trigger>().getStartID();
-				return hoveringBoxCollider.transform.parent.GetComponent<LineManager>().addVertex(gameObject.transform.position, index, null);
-			}else{
-				return null;
+				print("is hovering!");
+				int index = hoveringBoxCollider.GetComponent<Trigger>().getEndID();
+				hoveringBoxCollider.transform.parent.GetComponent<LineManager>().addVertex(gameObject.transform.position, index, null);
+				resetVariables();
 			}
+			return null;
 		}else{
+			print("is holding something");
 			float clampedY;
 			float clampedTiming;
 			yClamper(out clampedY, out clampedTiming);

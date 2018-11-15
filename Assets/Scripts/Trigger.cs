@@ -4,8 +4,8 @@ using UnityEngine;
 
 public class Trigger : MonoBehaviour {
 
-	int startID;
-	int endID;
+	public int startID;
+	public int endID;
 
 	public void setIDs(int newStartID, int newEndID){
 		startID = newStartID;
@@ -22,15 +22,16 @@ public class Trigger : MonoBehaviour {
 
 	public void OnTriggerEnter(Collider other){
 		if(other.tag=="GameController"){
-			print("entering");
-			other.GetComponent<InteractionManager>().setHoveringBoxCollider(gameObject.transform.parent.gameObject);
+			//print("entering");
+			other.GetComponent<InteractionManager>().setHoveringBoxCollider(gameObject);
 		}
 	}
+
 
 	public void OnTriggerExit(Collider other){
 		if(other.tag=="GameController"){
 			other.GetComponent<InteractionManager>().setHoveringBoxCollider(null);
-			print(other.gameObject.name + " is leaving collider " + gameObject.name);
+			//print(other.gameObject.name + " is leaving collider " + gameObject.name);
 		}
 	}
 }
