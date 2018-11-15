@@ -221,15 +221,6 @@ public class InteractionManager : MonoBehaviour {
 
 	#region adding, removing and changing the size of vertices
 
-	private Dictionary<LineManager, Dictionary<int, BoxCollider>> collectColliders(){
-		Dictionary<LineManager,Dictionary<int,BoxCollider>> LMToBC = new Dictionary<LineManager,Dictionary<int,BoxCollider>>();
-		foreach (GameObject baseLine in GameObject.FindGameObjectsWithTag("BaseLine")){
-			LineManager lm = baseLine.GetComponent<LineManager>();
-			LMToBC.Add(lm, lm.getAllColliders());
-		}
-		return LMToBC;
-	}
-
 	//method called when user creates a new vertex while holding another
 	public GameObject addNewVertex(){
 		if(!currentRigidBody){
@@ -241,7 +232,6 @@ public class InteractionManager : MonoBehaviour {
 			}
 			return null;
 		}else{
-			print("is holding something");
 			float clampedY;
 			float clampedTiming;
 			yClamper(out clampedY, out clampedTiming);

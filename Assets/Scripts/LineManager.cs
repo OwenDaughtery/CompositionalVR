@@ -322,9 +322,6 @@ public class LineManager : MonoBehaviour {
 
 	#endregion
 
-	public Dictionary<int, BoxCollider> getAllColliders(){
-		return boxColliderManager.getAllBoxColliders();
-	}
 
 	#region addVertex
 
