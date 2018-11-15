@@ -74,7 +74,7 @@ public class BoxColliderManager : MonoBehaviour {
 				trigger.setIDs(triggerID+1, triggerID+2);
 			}
 		}*/
-		newBoxCollider.name = index + " - " + index+1;
+		newBoxCollider.name = (index) + " - " + (index+1);
 		lineColliders.Add(newBoxCollider);
 		lineColliders.Sort(sortByTriggerID);
 
