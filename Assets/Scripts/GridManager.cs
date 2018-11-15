@@ -34,7 +34,7 @@ public class GridManager : MonoBehaviour {
 
 	//32 = 12 and 25
 	//24 = 12
-	private static int ySegments = 16;
+	private static int ySegments = 64;
 
 	private static Dictionary<float, int> YToTiming = new Dictionary<float,int>(); 
 	private static Dictionary<int, float> TimingToY = new Dictionary<int, float>();
@@ -120,7 +120,7 @@ public class GridManager : MonoBehaviour {
 	} 
 
 	public static int getClosestTiming(float y){
-		int lastValue = getYSegments()+1;
+		int lastValue = -1;
 		foreach(KeyValuePair<float, int> pair in YToTiming){
 				
 		if(y>pair.Key){
@@ -128,6 +128,7 @@ public class GridManager : MonoBehaviour {
 		}	
 		lastValue = pair.Value;
 		} 
+		
 		return (int)lastValue;
 	}
 

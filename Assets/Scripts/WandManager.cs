@@ -12,6 +12,7 @@ public class WandManager : MonoBehaviour {
 
 	//the interactionManager manager script
 	private InteractionManager interactionManager = null;
+	float timePressed = 0f;
 
 	// Use this for initialization
 	void Start () {
@@ -41,11 +42,17 @@ public class WandManager : MonoBehaviour {
 		#region grip
 		//Down
 		if(device.GetPressDown(SteamVR_Controller.ButtonMask.Grip)){
-			interactionManager.addNewVertex();
+			timePressed = Time.time;
+			
 		}
-
 		//Up
 		if(device.GetPressUp(SteamVR_Controller.ButtonMask.Grip)){
+			timePressed = Time.time - timePressed;
+			if(timePressed<=0.5f){
+				interactionManager.addNewVertex();
+			}else{
+				interactionManager.removeVertex();
+			}
 			
 		}
 		#endregion
@@ -55,10 +62,10 @@ public class WandManager : MonoBehaviour {
 		if(device.GetPressDown(SteamVR_Controller.ButtonMask.Touchpad)){
 			Vector2 touchpad = (device.GetAxis(Valve.VR.EVRButtonId.k_EButton_Axis0));
 			if (touchpad.y > 0.6f){
-				
+				interactionManager.moveVertexUp();
 			}else if (touchpad.y < -0.6f){
-				
-				interactionManager.removeVertex();
+				interactionManager.moveVertexDown();
+				//interactionManager.removeVertex();
 			}
 
 			if (touchpad.x > 0.6f){

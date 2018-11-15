@@ -29,8 +29,8 @@ public class PulseManager : MonoBehaviour {
 			lineManagers.Add(baseLine.GetComponent<LineManager>());
 		}
 		height=-1;
-		speed=0.5f;
-		//speed = GridManager.getYSegments()/10;
+		//speed=0.5f;
+		speed = GridManager.getYSegments()/10;
 		objectPooler = ObjectPooler.Instance;
 		foreach (LineManager LM in lineManagers){
 			LMtoPulse.Add(LM, new List<GameObject>());
@@ -60,11 +60,11 @@ public class PulseManager : MonoBehaviour {
 			foreach (GameObject pulse in LMtoPulse[key]){
 				PulseToHeight[pulse] = PulseToHeight[pulse]+(Time.deltaTime * speed);
 				if(PulseToHeight[pulse]>=GridManager.getYSegments()-1 && LMtoPulse[key].Count==1){
-					Debug.Log("start leadon!");
+				
 					linesToAddTo.Add(key);
 				}
 				if(PulseToHeight[pulse]>=GridManager.getYSegments()){
-					Debug.Log("start remove");
+					
 					pulsesToRemove.Add(key, pulse);
 				}else{
 					float rotation = key.getLocalRotation();

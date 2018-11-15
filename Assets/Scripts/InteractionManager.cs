@@ -154,6 +154,7 @@ public class InteractionManager : MonoBehaviour {
 
 	//compares the current vertices timing and y cordinate to the vertices before and after it to see if its "out of bounds"
 	private void yClamper(out float clampedY, out float clampedTiming){
+		
 		float siblingY;
 		float siblingTiming;
 
@@ -166,17 +167,21 @@ public class InteractionManager : MonoBehaviour {
 		if(currentVertexManager.gameObject.transform.parent.transform==gameObject.transform){
 			controllersTiming = GridManager.getClosestTiming(currentVertexManager.gameObject.transform.parent.transform.position.y);
 		}
-	
-	
+		
+		
 		//if(controllersTiming>currentVertexManager.getVertexTiming()){
 		//	print("first not equal!");
 			//controller is out of bounds and has become desynced
 			//clampedTiming = siblingTiming;
 			//clampedY = GridManager.getYFromTiming((int)clampedTiming);
 		//}else{
-		clampedTiming = Mathf.Max(currentVertexManager.getVertexTiming(), siblingTiming);
-		clampedY = GridManager.getYFromTiming((int)clampedTiming);
 		//}
+		clampedTiming = Mathf.Max(currentVertexManager.getVertexTiming(), siblingTiming);
+	
+		
+		clampedY = GridManager.getYFromTiming((int)clampedTiming);//====
+		
+		
 
 		currentVertexManager.getLowerVertex(out siblingY, out siblingTiming);
 
@@ -188,6 +193,7 @@ public class InteractionManager : MonoBehaviour {
 			clampedTiming = GridManager.getYSegments()-1;
 			clampedY = GridManager.getYFromTiming((int)clampedTiming);
 		}
+		
 
 	}	
 
@@ -250,23 +256,69 @@ public class InteractionManager : MonoBehaviour {
 		}
 	}
 
+	public GameObject hoverOverVertex(){
+		if(GetNearestRigidBody()){
+			GameObject nearestVertex = GetNearestRigidBody().gameObject;
+			Vector3 nearestVertexVector = nearestVertex.transform.position;
+			if(Vector3.Distance(transform.position, nearestVertexVector)<0.1f){
+				//is within range
+				VertexManager nearestVertexManager = nearestVertex.GetComponent<VertexManager>();
+				if(isEditable(nearestVertexManager.getVertexID(), nearestVertexManager.getBaseLineParent().gameObject)){
+					//is "editable"
+					return nearestVertex;
+				}
+				
+			}
+		}
+		return null;
+	}
+
+	public void moveVertexUp(){
+		GameObject nearestVertex = hoverOverVertex();
+		if(nearestVertex){
+			VertexManager nearestVertexManager = nearestVertex.GetComponent<VertexManager>();
+			float nearestVertexTiming = nearestVertexManager.getVertexTiming();
+
+			float higherSiblingY;
+			float higherSiblingTiming;
+			nearestVertexManager.getHigherVertex(out higherSiblingY, out higherSiblingTiming);
+			
+			if(nearestVertexTiming!=0 && nearestVertexTiming>higherSiblingTiming){
+				Vector3 currentPos = nearestVertex.transform.position;
+				Vector3 newPos = new Vector3(currentPos.x, GridManager.getYFromTiming((int)nearestVertexTiming-1), currentPos.z);
+				nearestVertexManager.moveTo(newPos);
+			}
+		}
+	}
+
+	public void moveVertexDown(){
+		GameObject nearestVertex = hoverOverVertex();
+		if(nearestVertex){
+			VertexManager nearestVertexManager = nearestVertex.GetComponent<VertexManager>();
+			float nearestVertexTiming = nearestVertexManager.getVertexTiming();
+
+			float lowerSiblingY;
+			float lowerSiblingTiming;
+			nearestVertexManager.getLowerVertex(out lowerSiblingY, out lowerSiblingTiming);
+
+			if(nearestVertexTiming<=GridManager.getYSegments()-1 && nearestVertexTiming<lowerSiblingTiming){
+				
+				Vector3 currentPos = nearestVertex.transform.position;
+				Vector3 newPos = new Vector3(currentPos.x, GridManager.getYFromTiming((int)nearestVertexTiming+1), currentPos.z);
+				nearestVertexManager.moveTo(newPos);
+			}
+		}
+	}
+
 	//method called when user wants to remove the vertex currently being held from the game.
 	public void removeVertex(){
 		if(!currentRigidBody){
-			if(GetNearestRigidBody()){
-				GameObject nearestVertex = GetNearestRigidBody().gameObject;
-				Vector3 nearestVertexVector = nearestVertex.transform.position;
-				if(Vector3.Distance(transform.position, nearestVertexVector)<0.1f){
-					VertexManager nearestVertexManager = nearestVertex.GetComponent<VertexManager>();
-					if(isEditable(nearestVertexManager.getVertexID(), nearestVertexManager.getBaseLineParent().gameObject)){
-						nearestVertex.transform.parent=gameObject.transform;
-						nearestVertexManager.getParentsLineManager().removeVertex(nearestVertex.transform.position, nearestVertexManager.getVertexID(), nearestVertex);
-						resetVariables();
-					}
-					
-				}else{
-					return;
-				}
+			GameObject nearestVertex = hoverOverVertex();
+			if(nearestVertex){
+				nearestVertex.transform.parent=gameObject.transform;
+				VertexManager nearestVertexManager = nearestVertex.GetComponent<VertexManager>();
+ 				nearestVertexManager.getParentsLineManager().removeVertex(nearestVertex.transform.position, nearestVertexManager.getVertexID(), nearestVertex);
+ 				resetVariables();
 			}
 		}else if(isEditable(currentVertexManager.getVertexID(), currentVertexManager.getBaseLineParent().gameObject)){
 			//if statement won't be entered if the id of the vertex being held is 1 (because that vertex is needed)
