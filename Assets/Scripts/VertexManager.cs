@@ -343,8 +343,9 @@ public class VertexManager : MonoBehaviour, IPooledObject{
 		}
 	}
 
-	private void contactSC(GridManager.Notes note, float volume, float length, string voice){
+	public static void contactSC(GridManager.Notes note, float volume, float length, string voice){
 		if(voice!="None"){
+			print("sending!");
 			//OSC Send
 			List<string> args = new List<string>();
 			args.Add(volume.ToString());
