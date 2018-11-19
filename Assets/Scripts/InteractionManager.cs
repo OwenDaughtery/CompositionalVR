@@ -72,9 +72,11 @@ public class InteractionManager : MonoBehaviour {
 		float closestPoint = float.MaxValue;
 		GameObject closestBoxCollider = null;
 		foreach (GameObject bc in hoveringBoxColliders){
-			Vector3 newPoint = bc.GetComponent<BoxCollider>().ClosestPoint(gameObject.transform.position);
-			if(Vector3.Distance(newPoint, gameObject.transform.position)<closestPoint){
-				closestBoxCollider = bc;
+			if(bc.GetComponent<Trigger>().getStartID()!=0){
+				Vector3 newPoint = bc.GetComponent<BoxCollider>().ClosestPoint(gameObject.transform.position);
+				if(Vector3.Distance(newPoint, gameObject.transform.position)<closestPoint){
+					closestBoxCollider = bc;
+				}
 			}
 		}
 		return closestBoxCollider;
