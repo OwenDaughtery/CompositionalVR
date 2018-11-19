@@ -338,7 +338,8 @@ public class VertexManager : MonoBehaviour, IPooledObject{
 			formatVertex(out note, out timing, out volume, out length, out voice);
 			contactSC(note,volume, length, voice);
 
-			print(note.ToString() + " " + volume.ToString());
+			//print(note.ToString() + " " + volume.ToString());
+			//UNCOMMENT THIS LINE TO KNOW WHEN A VERTEX HAS BEEN PLAYED
 		}
 	}
 

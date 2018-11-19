@@ -17,9 +17,10 @@ public class InteractionManager : MonoBehaviour {
 	private GameObject currentGameObject = null;
 	private GameObject controller = null;
 	[SerializeField]
-	private GameObject hoveringBoxCollider = null;
+	private List<GameObject> hoveringBoxColliders = new List<GameObject>();
 	[SerializeField]
 	private AISystemManager AI;
+	private GameObject tester = null;
 	#endregion
 
 	void Awake(){
@@ -32,6 +33,17 @@ public class InteractionManager : MonoBehaviour {
 		if(currentGameObject){
 			outOfBoundsCheck();
 		}
+
+		checkHoveringBoxColliders();
+		highlightBoxCollider();
+	}
+
+	void highlightBoxCollider(){
+		GameObject bc = getClosestBoxCollider();
+		if(bc){
+			
+		}
+
 	}
 
 	#region getters and setters
@@ -40,8 +52,32 @@ public class InteractionManager : MonoBehaviour {
 		return currentGameObject;
 	}
 
-	public void setHoveringBoxCollider(GameObject newBoxCollider){
-		hoveringBoxCollider = newBoxCollider;
+	public void setHoveringBoxColliders(GameObject newBoxCollider){
+		if(!hoveringBoxColliders.Contains(newBoxCollider)){
+			hoveringBoxColliders.Add(newBoxCollider);
+		}
+	}
+
+	private void checkHoveringBoxColliders(){
+		List<GameObject> tempBoxColliderList = new List<GameObject>(hoveringBoxColliders);
+		foreach (GameObject bc in tempBoxColliderList){
+			float distance = Vector3.Distance(bc.GetComponent<BoxCollider>().ClosestPoint(gameObject.transform.position), gameObject.transform.position);
+			if(distance>0.075){
+				hoveringBoxColliders.Remove(bc);
+			}
+		}
+	}
+
+	private GameObject getClosestBoxCollider(){
+		float closestPoint = float.MaxValue;
+		GameObject closestBoxCollider = null;
+		foreach (GameObject bc in hoveringBoxColliders){
+			Vector3 newPoint = bc.GetComponent<BoxCollider>().ClosestPoint(gameObject.transform.position);
+			if(Vector3.Distance(newPoint, gameObject.transform.position)<closestPoint){
+				closestBoxCollider = bc;
+			}
+		}
+		return closestBoxCollider;
 	}
 
 	#endregion
@@ -224,10 +260,10 @@ public class InteractionManager : MonoBehaviour {
 	//method called when user creates a new vertex while holding another
 	public GameObject addNewVertex(){
 		if(!currentRigidBody){
-			if(hoveringBoxCollider){
-				print("is hovering!");
-				int index = hoveringBoxCollider.GetComponent<Trigger>().getEndID();
-				hoveringBoxCollider.transform.parent.GetComponent<LineManager>().addVertex(gameObject.transform.position, index, null);
+			GameObject closestBoxCollider = getClosestBoxCollider();
+			if(closestBoxCollider){
+				int index = closestBoxCollider.GetComponent<Trigger>().getEndID();
+				closestBoxCollider.transform.parent.GetComponent<LineManager>().addVertex(gameObject.transform.position, index, null);
 				resetVariables();
 			}
 			return null;
@@ -370,6 +406,7 @@ public class InteractionManager : MonoBehaviour {
 		currentRigidBody = null;
 		currentVertexManager = null;
 		currentGameObject = null;
+		hoveringBoxColliders = new List<GameObject>();
 	}
 
 	//true if everyhtings ok, else false

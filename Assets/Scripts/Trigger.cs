@@ -20,6 +20,14 @@ public class Trigger : MonoBehaviour {
 		return endID;
 	}
 
+	public void OnTriggerStay(Collider other){
+		if(other.tag=="GameController"){
+			other.GetComponent<InteractionManager>().setHoveringBoxColliders(gameObject);
+		}
+		
+	}
+
+	/*
 	public void OnTriggerEnter(Collider other){
 		if(other.tag=="GameController"){
 			//print("entering");
@@ -33,5 +41,7 @@ public class Trigger : MonoBehaviour {
 			other.GetComponent<InteractionManager>().setHoveringBoxCollider(null);
 			//print(other.gameObject.name + " is leaving collider " + gameObject.name);
 		}
+	 
 	}
+	 */
 }

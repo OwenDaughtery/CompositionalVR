@@ -27,11 +27,6 @@ public class BoxColliderManager : MonoBehaviour {
 	}
 
 
-
-
-
-
-
 	private void addBoxColliders(){
 		for (int i = 0; i < attachedLR.positionCount-1; i++){
 			addBoxCollider(i);
@@ -60,7 +55,6 @@ public class BoxColliderManager : MonoBehaviour {
 
 
 		for (int i = index; i < lineColliders.Count; i++){
-			print(i);
 			lineColliders[i].GetComponent<Trigger>().setIDs(i+1, i+2);
 			lineColliders[i].name = (i+1 + " - " + i+2);
 		}
@@ -88,20 +82,20 @@ public class BoxColliderManager : MonoBehaviour {
 	}
 
 	public void removeBoxCollider(int index){
-		print("functionality not added yet!");
-		//objectPooler.returnToPool("BoxCollider", objectToReturn);
-		
-		/*if(index==attachedLR.positionCount-1){
-			objectPooler.returnToPool("BoxCollider", IDToBC[index].gameObject);
-			IDToBC.Remove(index);
-		}else{
-			print(index);
-			for (int i = index-1; i < attachedLR.positionCount-2; i++){
-				IDToBC[i]=IDToBC[i+1];
+
+		GameObject colliderToRemove = null;
+		foreach (GameObject lc in lineColliders){
+			Trigger trigger = lc.GetComponent<Trigger>();
+			if(trigger.getStartID()==index){
+				colliderToRemove=lc;
+			}else if(trigger.getStartID()>=index){
+	
+				trigger.setIDs(trigger.getStartID()-1, trigger.getEndID()-1);
 			}
-			objectPooler.returnToPool("BoxCollider", IDToBC[attachedLR.positionCount-2].gameObject);
-			IDToBC.Remove(attachedLR.positionCount-2);
-		}*/
+		}
+		lineColliders.Remove(colliderToRemove);
+		objectPooler.returnToPool("BoxCollider", colliderToRemove);
+
 	}
 
 	private void moveBoxCollder(GameObject objectBoxCollider, BoxCollider boxCollider, Vector3 startPoint, Vector3 endPoint){
