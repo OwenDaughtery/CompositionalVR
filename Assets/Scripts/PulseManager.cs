@@ -30,7 +30,7 @@ public class PulseManager : MonoBehaviour {
 		}
 		height=-1;
 		//speed=0.5f;
-		speed = GridManager.getYSegments()/10;
+		speed = GridManager.getYSegments()/8.5f;
 		objectPooler = ObjectPooler.Instance;
 		foreach (LineManager LM in lineManagers){
 			LMtoPulse.Add(LM, new List<GameObject>());

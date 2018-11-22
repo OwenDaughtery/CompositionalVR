@@ -4,8 +4,6 @@ using UnityEngine;
 
 public class AISystemManager : MonoBehaviour {
 
-	[SerializeField]
-	private Dictionary<int, List<GridManager.Notes>> masterScore = new Dictionary<int, List<GridManager.Notes>>();
 	private LineManager[] lineManagers;
 
 	private static GridManager.Notes[] allNotes = new GridManager.Notes[GridManager.noteToFreq.Count];
@@ -13,27 +11,66 @@ public class AISystemManager : MonoBehaviour {
 	private static int[] minorScale=  new int[8] {1,3,4,6,8,9,12,13};
 	
 	public GridManager.Notes key = GridManager.Notes.none;
+	public List<GridManager.Notes> availableNotes;
 	public bool major = true;
+	public bool playScaleButton = false;
 	public bool harmonize = false;
-	public bool lastHarmonize;
 	private GridManager.Notes lastKey = GridManager.Notes.none;
 	
+	public Dictionary<int, List<GridManager.Notes>> masterScore = new Dictionary<int, List<GridManager.Notes>>();
 	private GridManager.Notes[] inputtedNotes = new GridManager.Notes[4]{GridManager.Notes.C4, GridManager.Notes.F4, GridManager.Notes.G4, GridManager.Notes.A4};
 	void Start(){
 		populateAllNotes();
+		setUpMasterScore();
+		addUsersInput();
+	}
+
+	private void addUsersInput(){
+		masterScore[0].Add(GridManager.Notes.E4);
+		masterScore[0].Add(GridManager.Notes.G4);
+		masterScore[4].Add(GridManager.Notes.D4);
+		masterScore[8].Add(GridManager.Notes.C4);
+		masterScore[12].Add(GridManager.Notes.D4);
+		masterScore[16].Add(GridManager.Notes.E4);
+		masterScore[20].Add(GridManager.Notes.E4);
+		masterScore[24].Add(GridManager.Notes.E4);
+	}
+
+	private void setUpMasterScore(){
+		for (int i = 0; i < 64; i++){
+			masterScore.Add(i, new List<GridManager.Notes>());
+		}
 	}
 
 	void Update(){
 		
-		if(lastKey!=key){
-			StartCoroutine(waiter());
-			//playScale();
+		if(lastKey!=key && key!=GridManager.Notes.none){
+			setAvailableNotes();
 		}
-		if(harmonize&&!lastHarmonize){
-			harmonizeInput();
+		if(harmonize){
+			StartCoroutine(harmonizeInput());
+			harmonize=false;
 		}
-		lastHarmonize=harmonize;
+		if(playScaleButton && key!=GridManager.Notes.none){
+			StartCoroutine(playScale());
+			playScaleButton=false;
+		}
 		lastKey=key;
+	}
+
+	private void setAvailableNotes(){
+		int offset = ((int)key)-1;
+		availableNotes = new List<GridManager.Notes>();
+
+		if(major){
+			for (int i = 0; i < majorScale.Length; i++){
+				availableNotes.Add((GridManager.Notes)(majorScale[i]+offset));
+			}
+		}else{
+			for (int i = 0; i < minorScale.Length; i++){
+				availableNotes.Add((GridManager.Notes)(majorScale[i]+offset));
+			}
+		}
 	}
 
 	private void populateAllNotes(){
@@ -43,48 +80,24 @@ public class AISystemManager : MonoBehaviour {
 		}
 	}
 
-	private void harmonizeInput(){
-
-	}
-
-	private void playScale(){
-		int offset = ((int)key)-1;
-		if(major){
-			for (int i = 0; i < majorScale.Length; i++){
-				print("would play: " + ((GridManager.Notes)(majorScale[i]+offset)));
+	IEnumerator harmonizeInput(){
+		foreach (KeyValuePair<int, List<GridManager.Notes>> pair in masterScore){
+			foreach (GridManager.Notes note in pair.Value){
+				playNote(note);
+				
 			}
-		}else{
-			for (int i = 0; i < minorScale.Length; i++){
-				print("would play: " + ((GridManager.Notes)(minorScale[i]+offset)));
-			}
+			yield return new WaitForSeconds(0.1f);
 		}
-		
-		
 	}
 
 	private void playNote(GridManager.Notes note){
 		VertexManager.contactSC(note, 0.5f,0.5f,"VoiceA");	
 	}
 
-	IEnumerator waiter(){
-		int offset = ((int)key)-1;
-		if(major){
-			for (int i = 0; i < majorScale.Length; i++){
-				print("Play: " + ((GridManager.Notes)(majorScale[i]+offset)));
-				//Wait for 4 seconds
-				playNote((GridManager.Notes)(majorScale[i]+offset));
-				yield return new WaitForSeconds(0.3f);
-				
-			}
-		}else{
-			for (int i = 0; i < minorScale.Length; i++){
-				print("would play: " + ((GridManager.Notes)(minorScale[i]+offset)));
-				playNote((GridManager.Notes)(minorScale[i]+offset));
-				yield return new WaitForSeconds(0.3f);
-			}
+	IEnumerator playScale(){
+		foreach (GridManager.Notes note in availableNotes){
+			playNote(note);
+			yield return new WaitForSeconds(0.3f);
 		}
-
 	}
-
-
 }

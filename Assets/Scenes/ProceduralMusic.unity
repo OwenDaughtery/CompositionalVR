@@ -206,7 +206,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   key: 0
+  availableNotes: 
   major: 1
+  playScaleButton: 0
+  harmonize: 0
 --- !u!4 &95185083
 Transform:
   m_ObjectHideFlags: 0
