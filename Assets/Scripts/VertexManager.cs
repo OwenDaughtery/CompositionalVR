@@ -345,12 +345,14 @@ public class VertexManager : MonoBehaviour, IPooledObject{
 
 	public static void contactSC(GridManager.Notes note, float volume, float length, string voice){
 		if(voice!="None"){
-			print("sending!");
+		
 			//OSC Send
 			List<string> args = new List<string>();
 			args.Add(volume.ToString());
 			args.Add(GridManager.noteToFreq[note].ToString());
 			args.Add(length.ToString());
+
+		
 			
 			OSCHandler.Instance.SendMessageToClient("SuperCollider", "/play"+voice, args);
 		}

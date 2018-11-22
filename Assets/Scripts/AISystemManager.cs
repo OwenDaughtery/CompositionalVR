@@ -14,16 +14,25 @@ public class AISystemManager : MonoBehaviour {
 	
 	public GridManager.Notes key = GridManager.Notes.none;
 	public bool major = true;
+	public bool harmonize = false;
+	public bool lastHarmonize;
 	private GridManager.Notes lastKey = GridManager.Notes.none;
 	
+	private GridManager.Notes[] inputtedNotes = new GridManager.Notes[4]{GridManager.Notes.C4, GridManager.Notes.F4, GridManager.Notes.G4, GridManager.Notes.A4};
 	void Start(){
 		populateAllNotes();
 	}
 
 	void Update(){
+		
 		if(lastKey!=key){
-			playScale();
+			StartCoroutine(waiter());
+			//playScale();
 		}
+		if(harmonize&&!lastHarmonize){
+			harmonizeInput();
+		}
+		lastHarmonize=harmonize;
 		lastKey=key;
 	}
 
@@ -34,12 +43,15 @@ public class AISystemManager : MonoBehaviour {
 		}
 	}
 
+	private void harmonizeInput(){
+
+	}
+
 	private void playScale(){
 		int offset = ((int)key)-1;
 		if(major){
 			for (int i = 0; i < majorScale.Length; i++){
 				print("would play: " + ((GridManager.Notes)(majorScale[i]+offset)));
-				VertexManager.contactSC((GridManager.Notes)(majorScale[i]+offset),0.5f,0.5f,"/playVoiceA");
 			}
 		}else{
 			for (int i = 0; i < minorScale.Length; i++){
@@ -47,6 +59,31 @@ public class AISystemManager : MonoBehaviour {
 			}
 		}
 		
+		
+	}
+
+	private void playNote(GridManager.Notes note){
+		VertexManager.contactSC(note, 0.5f,0.5f,"VoiceA");	
+	}
+
+	IEnumerator waiter(){
+		int offset = ((int)key)-1;
+		if(major){
+			for (int i = 0; i < majorScale.Length; i++){
+				print("Play: " + ((GridManager.Notes)(majorScale[i]+offset)));
+				//Wait for 4 seconds
+				playNote((GridManager.Notes)(majorScale[i]+offset));
+				yield return new WaitForSeconds(0.3f);
+				
+			}
+		}else{
+			for (int i = 0; i < minorScale.Length; i++){
+				print("would play: " + ((GridManager.Notes)(minorScale[i]+offset)));
+				playNote((GridManager.Notes)(minorScale[i]+offset));
+				yield return new WaitForSeconds(0.3f);
+			}
+		}
+
 	}
 
 

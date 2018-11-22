@@ -253,6 +253,7 @@ public class OSCHandler : MonoBehaviour
 	/// </param>
 	public void SendMessageToClient<T>(string clientId, string address, List<T> values)
 	{	
+		
 		if(_clients.ContainsKey(clientId))
 		{
 			OSCMessage message = new OSCMessage(address);
