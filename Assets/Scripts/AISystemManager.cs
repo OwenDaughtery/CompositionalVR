@@ -15,7 +15,12 @@ public class AISystemManager : MonoBehaviour {
 	public List<GridManager.Notes> availableNotes;
 	public bool major = true;
 	public bool playScaleButton = false;
-	public bool harmonize = false;
+	public bool playButton = false;
+	public bool randomNoteProduction = false;
+	public bool corpusNoteProduction = false;
+	Coroutine coroutine = null;
+	public bool calculateKeyButton = false;
+	private System.Random random = new System.Random();
 	private GridManager.Notes lastKey = GridManager.Notes.none;
 	
 	public Dictionary<int, List<GridManager.Notes>> masterScore = new Dictionary<int, List<GridManager.Notes>>();
@@ -28,13 +33,13 @@ public class AISystemManager : MonoBehaviour {
 
 
 	private void addUsersInput(){
-		masterScore[0].Add(GridManager.Notes.E4);
-		masterScore[4].Add(GridManager.Notes.D4);
-		masterScore[8].Add(GridManager.Notes.C4);
-		masterScore[12].Add(GridManager.Notes.D4);
-		masterScore[16].Add(GridManager.Notes.E4);
-		masterScore[20].Add(GridManager.Notes.E4);
-		masterScore[24].Add(GridManager.Notes.E4);
+		masterScore[0].Add(GridManager.Notes.E5);
+		masterScore[4].Add(GridManager.Notes.D5);
+		masterScore[8].Add(GridManager.Notes.C5);
+		masterScore[12].Add(GridManager.Notes.D5);
+		masterScore[16].Add(GridManager.Notes.E5);
+		masterScore[20].Add(GridManager.Notes.E5);
+		masterScore[24].Add(GridManager.Notes.E5);
 	}
 
 	private void setUpMasterScore(){
@@ -48,74 +53,110 @@ public class AISystemManager : MonoBehaviour {
 		if(lastKey!=key && key!=GridManager.Notes.none){
 			setAvailableNotes();
 		}
-		if(harmonize){
-			Dictionary<int, List<GridManager.Notes>> harmonizedInput =  harmonizeInput();
-			StartCoroutine(playDict(harmonizedInput));
-			harmonize=false;
+		if(playButton){
+
+			if(coroutine==null){
+				//Dictionary<int, List<GridManager.Notes>> harmonizedInput =  harmonizeInput();
+				coroutine = StartCoroutine(playInput());
+				//coroutine = StartCoroutine(playDict(harmonizedInput));
+			}else{
+
+			}
+			
+			//harmonizeButton=false;
 		}
 		if(playScaleButton && key!=GridManager.Notes.none){
 			StartCoroutine(playScale());
 			playScaleButton=false;
 		}
+		if(calculateKeyButton){
+			calculateKey();
+			calculateKeyButton = false;
+		}
 		lastKey=key;
+	}
+
+	private void calculateKey(){
+		print("functionality does not exist yet");
 	}
 
 
 	private void setAvailableNotes(){
 		int offset = (((int)key)-1)%12;
 		availableNotes = new List<GridManager.Notes>();
-
+		int numberOfOctaves = 3;
 		if(major){
-			for(int octave = 0; octave<=1; octave++){
-				for (int i = 0; i <= majorScale.Length-1; i++){
-					availableNotes.Add(allNotes[majorScale[i%majorScale.Length]+(12*octave)+(offset)]);
+			for(int octave = 0; octave<=numberOfOctaves; octave++){
+				for (int i = 0; i < majorScale.Length-1; i++){
+					try{
+						availableNotes.Add(allNotes[majorScale[i%majorScale.Length]+(12*octave)+(offset)]);
+					}catch (System.Exception){
+						Debug.Log("Run out of notes for key");
+						break;
+						
+					}
 				}
+				
 			}
+			try{
+				availableNotes.Add(allNotes[majorScale[majorScale.Length-1]+(12*numberOfOctaves)+(offset)]);
+			}catch (System.Exception){
+				Debug.Log("Run out of notes for key");
+				
+			}
+			
 		}else{
-			for(int octave = 0; octave<=1; octave++){
+			for(int octave = 0; octave<=numberOfOctaves; octave++){
 				for (int i = 0; i <= minorScale.Length-1; i++){
-					availableNotes.Add(allNotes[minorScale[i%minorScale.Length]+(12*octave)+(offset)]);
+					try{
+						availableNotes.Add(allNotes[minorScale[i%minorScale.Length]+(12*octave)+(offset)]);
+					}catch (System.Exception){
+						Debug.Log("Run out of notes for key");
+						break;
+						
+					}
 				}
 			}	
+			try{
+				availableNotes.Add(allNotes[majorScale[7%majorScale.Length-1]+(12*numberOfOctaves)+(offset)]);
+			}catch (System.Exception){
+				
+				Debug.Log("Run out of notes for key");
+				
+			}
 		}
 	}
 
 	private void populateAllNotes(){
 		int i=0;
 		foreach (KeyValuePair<GridManager.Notes, float> pair in GridManager.noteToFreq){
-			allNotes[i] = pair.Key;
-			i+=1;
+			if(pair.Key!=GridManager.Notes.none){
+				allNotes[i] = pair.Key;
+				i+=1;
+			}
+
 		}
 	}
 
 	private GridManager.Notes getNoteFromInt(int index){
-		//int octaveJump = Mathf.FloorToInt(index/availableNotes.Count);
-		//print("octave jump: " + octaveJump);
 		int newIndex = (index)%(availableNotes.Count);
-		//newIndex = newIndex+(octaveJump*12);
 		return availableNotes[newIndex];
 	}
-	/* 
 
-	private GridManager.Notes getIntFromNote(GridManager.Notes note){
-		if((int)note>12){
-			int baseOctaveIndex = note
-		}
-	}*/
-
-	private Dictionary<int, List<GridManager.Notes>> harmonizeInput(){
+	/*private Dictionary<int, List<GridManager.Notes>> harmonizeInput(){
+		System.Random random = new System.Random();
+		int[] upperOrLower = new int[2]{2,-2};
 		Dictionary<int, List<GridManager.Notes>> harmonizedInput = new Dictionary<int, List<GridManager.Notes>>();
 		Dictionary<int, List<GridManager.Notes>> notesToAdd = new Dictionary<int, List<GridManager.Notes>>();
 		foreach (KeyValuePair<int, List<GridManager.Notes>> pair in masterScore){
 			harmonizedInput.Add(pair.Key, new List<GridManager.Notes>());
 			notesToAdd.Add(pair.Key, new List<GridManager.Notes>());
 			foreach (GridManager.Notes note in pair.Value){
+				notesToAdd[pair.Key].Add(note);
 				try{
 					int indexInScale = availableNotes.IndexOf(note);
-					print("note is: " + (availableNotes[indexInScale]));
-					GridManager.Notes newHarmonizedNote = getNoteFromInt(indexInScale+2);
-					print("added note is: " + (availableNotes[indexInScale]));
-					notesToAdd[pair.Key].Add(note);
+					int r = random.Next(upperOrLower.Length);
+					GridManager.Notes newHarmonizedNote = getNoteFromInt(indexInScale+upperOrLower[r]);
 					notesToAdd[pair.Key].Add(newHarmonizedNote);
 				}catch (System.Exception){
 					Debug.Log("ERROR: Note does not index in available notes!");	
@@ -132,17 +173,139 @@ public class AISystemManager : MonoBehaviour {
 			}
 		}		
 		return harmonizedInput;
+}*/
+
+	private Dictionary<int, List<GridManager.Notes>> harmonizeInput(Dictionary<int, List<GridManager.Notes>> input){
+		int[] upperOrLower = new int[2]{2,-2};
+		Dictionary<int, List<GridManager.Notes>> harmonizedInput = new Dictionary<int, List<GridManager.Notes>>();
+		Dictionary<int, List<GridManager.Notes>> notesToAdd = new Dictionary<int, List<GridManager.Notes>>();
+		
+		foreach (KeyValuePair<int, List<GridManager.Notes>> pair in input){
+			notesToAdd.Add(pair.Key, new List<GridManager.Notes>());
+			harmonizedInput.Add(pair.Key, new List<GridManager.Notes>());
+			foreach (GridManager.Notes note in pair.Value){
+				
+				notesToAdd[pair.Key].Add(note);
+				if(pair.Key%4==0){
+					try{
+					
+						int indexInScale = availableNotes.IndexOf(note);
+						
+						int r = random.Next(upperOrLower.Length);
+						GridManager.Notes newHarmonizedNote = getNoteFromInt(indexInScale+upperOrLower[r]);
+						
+						notesToAdd[pair.Key].Add(newHarmonizedNote);
+					}catch (System.Exception){
+						Debug.Log("ERROR: Note does not index in available notes!");	
+						break;
+						throw;
+					}
+				}
+				
+			}
+		}
+
+		foreach (KeyValuePair<int, List<GridManager.Notes>> pair in notesToAdd){
+			foreach (GridManager.Notes note in pair.Value){		
+				harmonizedInput[pair.Key].Add(note);
+			}
+		}		
+		return harmonizedInput;
 	}
+
+	private GridManager.Notes getRandomNoteInKey(GridManager.Notes givenKey){
+		int r = random.Next(availableNotes.Count);
+		return availableNotes[r];
+	}
+
+	private Dictionary<int, List<GridManager.Notes>> generateRandomNotes(Dictionary<int, List<GridManager.Notes>> randomNotes, int bar){
+		int numberOfNotesAdded = 0;
+		int numberOfNotesRemoved = 0;
+		System.Random randomNoteChooser = new System.Random();
+		foreach (KeyValuePair<int, List<GridManager.Notes>> pair in randomNotes){
+			GridManager.Notes newRandomNote = GridManager.Notes.none;
+			int r = randomNoteChooser.Next(0,100);
+			if(pair.Value.Count!=0){
+				if(r>10){
+					numberOfNotesRemoved+=1;
+					pair.Value.RemoveAt(0);
+				}
+			}
+			if(r>(Mathf.Max(bar,20))){
+				numberOfNotesAdded+=1;
+				newRandomNote = getRandomNoteInKey(key);
+				pair.Value.Add(newRandomNote);
+			}
+		}
+		print("Number Of Notes Added: " + numberOfNotesAdded);
+		print("Number Of Notes Removed: " + numberOfNotesRemoved);
+		return randomNotes;
+	}
+
+	private Dictionary<int, List<GridManager.Notes>> generateCorpusNotes(Dictionary<int, List<GridManager.Notes>> input, Dictionary<int, List<GridManager.Notes>> corpusNotes){
+		
+		return corpusNotes;
+	}
+
 
 	private void playNote(GridManager.Notes note){
 		//print(note);
 		VertexManager.contactSC(note, 0.5f,0.5f,"VoiceA");	
 	}
 
+
+
+	IEnumerator playInput(){
+		//Dictionary<int, List<GridManager.Notes>> harmonizedInput =  harmonizeInput();
+		Dictionary<int, List<GridManager.Notes>> input =  masterScore;
+		Dictionary<int, List<GridManager.Notes>> harmonizedNotes = new Dictionary<int, List<GridManager.Notes>>();
+		Dictionary<int, List<GridManager.Notes>> randomNotes = new Dictionary<int, List<GridManager.Notes>>();
+		Dictionary<int, List<GridManager.Notes>> corpusNotes = new Dictionary<int, List<GridManager.Notes>>();
+		for (int i = 0; i < 64; i++){
+			randomNotes.Add(i, new List<GridManager.Notes>());
+			corpusNotes.Add(i, new List<GridManager.Notes>());
+		}
+		int count=0;
+		while(playButton){
+			harmonizedNotes = harmonizeInput(input);
+			if(randomNoteProduction){
+				randomNotes = generateRandomNotes(randomNotes, 100-(count*5));
+			}
+			if(corpusNoteProduction){
+				corpusNotes = generateCorpusNotes(input, corpusNotes);
+			}
+			
+			foreach (KeyValuePair<int, List<GridManager.Notes>> pair in masterScore){
+				List<GridManager.Notes> notesToPlay = concat(pair.Value, harmonizedNotes[pair.Key]);
+				notesToPlay = concat(notesToPlay, randomNotes[pair.Key]);
+				foreach (GridManager.Notes note in notesToPlay){
+					playNote(note);
+					
+				}
+				yield return new WaitForSeconds(0.1f);
+			}
+
+			count+=1;
+		}
+		coroutine=null;
+		
+	}
+
+	private List<GridManager.Notes> concat(List<GridManager.Notes> a, List<GridManager.Notes> b){
+		List<GridManager.Notes> listToReturn = new List<GridManager.Notes>();
+		foreach (GridManager.Notes note in a){
+			listToReturn.Add(note);	
+		}
+		foreach (GridManager.Notes note in b){
+			listToReturn.Add(note);	
+		}
+		return listToReturn;
+	}
+
 	IEnumerator playScale(){
 		foreach (GridManager.Notes note in availableNotes){
 			playNote(note);
-			yield return new WaitForSeconds(0.3f);
+			yield return new WaitForSeconds(0.15f);
 		}
 	}
 
@@ -155,4 +318,6 @@ public class AISystemManager : MonoBehaviour {
 			yield return new WaitForSeconds(0.1f);
 		}
 	}
+
+	
 }

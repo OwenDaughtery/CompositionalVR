@@ -38,12 +38,38 @@ public class GridManager : MonoBehaviour {
 
 	private static Dictionary<float, int> YToTiming = new Dictionary<float,int>(); 
 	private static Dictionary<int, float> TimingToY = new Dictionary<int, float>();
+	#endregion
 
+	#region notes
 	//The list of possible notes to play, always includes none at start.
-	//public enum Notes {none, C4, Cs4, D4, Ds4, E4, F4, Fs4, G4, Gs4, A4, As4, B4, C5, Cs5, D5, Ds5, E5, F5, Fs5, G5, Gs5, A5, As5, B5, C6};
-	public enum Notes {none, C4, Cs4, D4, Ds4, E4, F4, Fs4, G4, Gs4, A4, As4, B4, C5, Cs5, D5, Ds5, E5, F5, Fs5, G5, Gs5, A5, As5, B5, C6, Cs6, D6, Ds6, E6, F6, Fs6, G6, Gs6, A6, As6, B6, C7};
+	public enum Notes {none, C2, Cs2, D2, Ds2, E2, F2, Fs2, G2, Gs2, A2, As2, B2, C3, Cs3, D3, Ds3, E3, F3, Fs3, G3, Gs3, A3, As3, B3, C4, Cs4, D4, Ds4, E4, F4, Fs4, G4, Gs4, A4, As4, B4, C5, Cs5, D5, Ds5, E5, F5, Fs5, G5, Gs5, A5, As5, B5, C6, Cs6, D6, Ds6, E6, F6, Fs6, G6, Gs6, A6, As6, B6, C7};
 
 	public static Dictionary<Notes, float> noteToFreq = new Dictionary<Notes, float>{
+		{Notes.none, 0f},
+		{Notes.C2, 65.41f},
+		{Notes.Cs2, 69.30f},
+		{Notes.D2, 73.42f},
+		{Notes.Ds2, 77.78f},
+		{Notes.E2, 82.41f},
+		{Notes.F2, 87.31f},
+		{Notes.Fs2, 92.50f},
+		{Notes.G2, 98.00f},
+		{Notes.Gs2, 103.83f},
+		{Notes.A2, 110.00f},
+		{Notes.As2, 116.54f},
+		{Notes.B2, 123.47f},
+		{Notes.C3, 130.81f},
+		{Notes.Cs3, 138.59f},
+		{Notes.D3, 146.83f},
+		{Notes.Ds3, 155.56f},
+		{Notes.E3, 164.81f},
+		{Notes.F3, 174.61f},
+		{Notes.Fs3, 185.00f},
+		{Notes.G3, 196.00f},
+		{Notes.Gs3, 207.65f},
+		{Notes.A3, 220.00f},
+		{Notes.As3, 233.08f},
+		{Notes.B3, 246.94f},
 		{Notes.C4, 261.626f},
 		{Notes.Cs4, 277.183f},
 		{Notes.D4, 293.665f},

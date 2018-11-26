@@ -209,7 +209,8 @@ MonoBehaviour:
   availableNotes: 
   major: 1
   playScaleButton: 0
-  harmonize: 0
+  playButton: 0
+  calculateKeyButton: 0
 --- !u!4 &95185083
 Transform:
   m_ObjectHideFlags: 0
