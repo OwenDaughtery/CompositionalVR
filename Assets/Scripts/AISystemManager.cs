@@ -27,7 +27,6 @@ public class AISystemManager : MonoBehaviour {
 
 	private void addUsersInput(){
 		masterScore[0].Add(GridManager.Notes.E4);
-		masterScore[0].Add(GridManager.Notes.G4);
 		masterScore[4].Add(GridManager.Notes.D4);
 		masterScore[8].Add(GridManager.Notes.C4);
 		masterScore[12].Add(GridManager.Notes.D4);
@@ -48,7 +47,8 @@ public class AISystemManager : MonoBehaviour {
 			setAvailableNotes();
 		}
 		if(harmonize){
-			StartCoroutine(harmonizeInput());
+			Dictionary<int, List<GridManager.Notes>> harmonizedInput =  harmonizeInput();
+			StartCoroutine(playDict(harmonizedInput));
 			harmonize=false;
 		}
 		if(playScaleButton && key!=GridManager.Notes.none){
@@ -68,7 +68,7 @@ public class AISystemManager : MonoBehaviour {
 			}
 		}else{
 			for (int i = 0; i < minorScale.Length; i++){
-				availableNotes.Add((GridManager.Notes)(majorScale[i]+offset));
+				availableNotes.Add((GridManager.Notes)(minorScale[i]+offset));
 			}
 		}
 	}
@@ -80,14 +80,21 @@ public class AISystemManager : MonoBehaviour {
 		}
 	}
 
-	IEnumerator harmonizeInput(){
-		foreach (KeyValuePair<int, List<GridManager.Notes>> pair in masterScore){
+	private Dictionary<int, List<GridManager.Notes>> harmonizeInput(){
+		Dictionary<int, List<GridManager.Notes>> harmonizedInput = new Dictionary<int, List<GridManager.Notes>>(masterScore);
+		foreach (KeyValuePair<int, List<GridManager.Notes>> pair in harmonizedInput){
 			foreach (GridManager.Notes note in pair.Value){
-				playNote(note);
+				try{
+					int indexInScale = availableNotes.IndexOf(note);
+				}catch (System.Exception)
+				{
+					Debug.Log("ERROR: Note does not index in available notes!");	
+					throw;
+				}
 				
 			}
-			yield return new WaitForSeconds(0.1f);
 		}
+		return harmonizedInput;
 	}
 
 	private void playNote(GridManager.Notes note){
@@ -98,6 +105,16 @@ public class AISystemManager : MonoBehaviour {
 		foreach (GridManager.Notes note in availableNotes){
 			playNote(note);
 			yield return new WaitForSeconds(0.3f);
+		}
+	}
+
+	IEnumerator playDict(Dictionary<int, List<GridManager.Notes>> givenDict){
+		foreach (KeyValuePair<int, List<GridManager.Notes>> pair in givenDict){
+			foreach (GridManager.Notes note in pair.Value){
+				playNote(note);
+				
+			}
+			yield return new WaitForSeconds(0.1f);
 		}
 	}
 }
