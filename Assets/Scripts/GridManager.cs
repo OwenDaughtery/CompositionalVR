@@ -41,7 +41,7 @@ public class GridManager : MonoBehaviour {
 
 	//The list of possible notes to play, always includes none at start.
 	//public enum Notes {none, C4, Cs4, D4, Ds4, E4, F4, Fs4, G4, Gs4, A4, As4, B4, C5, Cs5, D5, Ds5, E5, F5, Fs5, G5, Gs5, A5, As5, B5, C6};
-	public enum Notes {none, C4, Cs4, D4, Ds4, E4, F4, Fs4, G4, Gs4, A4, As4, B4, C5, Cs5, D5, Ds5, E5, F5, Fs5, G5, Gs5, A5, As5, B5, C6};
+	public enum Notes {none, C4, Cs4, D4, Ds4, E4, F4, Fs4, G4, Gs4, A4, As4, B4, C5, Cs5, D5, Ds5, E5, F5, Fs5, G5, Gs5, A5, As5, B5, C6, Cs6, D6, Ds6, E6, F6, Fs6, G6, Gs6, A6, As6, B6, C7};
 
 	public static Dictionary<Notes, float> noteToFreq = new Dictionary<Notes, float>{
 		{Notes.C4, 261.626f},
@@ -68,7 +68,19 @@ public class GridManager : MonoBehaviour {
 		{Notes.A5, 880.000f},
 		{Notes.As5, 932.328f},
 		{Notes.B5, 987.767f},
-		{Notes.C6, 1046.50f}
+		{Notes.C6, 1046.50f},
+		{Notes.Cs6, 1108.73f},
+		{Notes.D6, 1174.66f},
+		{Notes.Ds6, 1244.51f},
+		{Notes.E6, 1318.51f},
+		{Notes.F6, 1396.91f},
+		{Notes.Fs6, 1479.98f},
+		{Notes.G6, 1567.98f},
+		{Notes.Gs6, 1661.22f},
+		{Notes.A6, 1760.00f},
+		{Notes.As6, 1864.66f},
+		{Notes.B6, 1975.53f},
+		{Notes.C7, 2093.00f}
 	};
 
 	#endregion

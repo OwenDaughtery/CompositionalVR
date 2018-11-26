@@ -205,7 +205,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 99d4da9a926137e4c90aa8a1c29b85af, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  key: 0
+  key: 1
   availableNotes: 
   major: 1
   playScaleButton: 0

@@ -6,9 +6,10 @@ public class AISystemManager : MonoBehaviour {
 
 	private LineManager[] lineManagers;
 
-	private static GridManager.Notes[] allNotes = new GridManager.Notes[GridManager.noteToFreq.Count];
-	private static int[] majorScale = new int[8] {1,3,5,6,8,10,12,13};
-	private static int[] minorScale=  new int[8] {1,3,4,6,8,9,12,13};
+	[SerializeField]
+	public static GridManager.Notes[] allNotes = new GridManager.Notes[GridManager.noteToFreq.Count];
+	private static int[] majorScale = new int[8] {0,2,4,5,7,9,11,12};
+	private static int[] minorScale=  new int[8] {0,2,3,5,7,8,11,12};
 	
 	public GridManager.Notes key = GridManager.Notes.none;
 	public List<GridManager.Notes> availableNotes;
@@ -24,6 +25,7 @@ public class AISystemManager : MonoBehaviour {
 		setUpMasterScore();
 		addUsersInput();
 	}
+
 
 	private void addUsersInput(){
 		masterScore[0].Add(GridManager.Notes.E4);
@@ -58,18 +60,23 @@ public class AISystemManager : MonoBehaviour {
 		lastKey=key;
 	}
 
+
 	private void setAvailableNotes(){
-		int offset = ((int)key)-1;
+		int offset = (((int)key)-1)%12;
 		availableNotes = new List<GridManager.Notes>();
 
 		if(major){
-			for (int i = 0; i < majorScale.Length; i++){
-				availableNotes.Add((GridManager.Notes)(majorScale[i]+offset));
+			for(int octave = 0; octave<=1; octave++){
+				for (int i = 0; i <= majorScale.Length-1; i++){
+					availableNotes.Add(allNotes[majorScale[i%majorScale.Length]+(12*octave)+(offset)]);
+				}
 			}
 		}else{
-			for (int i = 0; i < minorScale.Length; i++){
-				availableNotes.Add((GridManager.Notes)(minorScale[i]+offset));
-			}
+			for(int octave = 0; octave<=1; octave++){
+				for (int i = 0; i <= minorScale.Length-1; i++){
+					availableNotes.Add(allNotes[minorScale[i%minorScale.Length]+(12*octave)+(offset)]);
+				}
+			}	
 		}
 	}
 
@@ -77,27 +84,58 @@ public class AISystemManager : MonoBehaviour {
 		int i=0;
 		foreach (KeyValuePair<GridManager.Notes, float> pair in GridManager.noteToFreq){
 			allNotes[i] = pair.Key;
+			i+=1;
 		}
 	}
 
+	private GridManager.Notes getNoteFromInt(int index){
+		//int octaveJump = Mathf.FloorToInt(index/availableNotes.Count);
+		//print("octave jump: " + octaveJump);
+		int newIndex = (index)%(availableNotes.Count);
+		//newIndex = newIndex+(octaveJump*12);
+		return availableNotes[newIndex];
+	}
+	/* 
+
+	private GridManager.Notes getIntFromNote(GridManager.Notes note){
+		if((int)note>12){
+			int baseOctaveIndex = note
+		}
+	}*/
+
 	private Dictionary<int, List<GridManager.Notes>> harmonizeInput(){
-		Dictionary<int, List<GridManager.Notes>> harmonizedInput = new Dictionary<int, List<GridManager.Notes>>(masterScore);
-		foreach (KeyValuePair<int, List<GridManager.Notes>> pair in harmonizedInput){
+		Dictionary<int, List<GridManager.Notes>> harmonizedInput = new Dictionary<int, List<GridManager.Notes>>();
+		Dictionary<int, List<GridManager.Notes>> notesToAdd = new Dictionary<int, List<GridManager.Notes>>();
+		foreach (KeyValuePair<int, List<GridManager.Notes>> pair in masterScore){
+			harmonizedInput.Add(pair.Key, new List<GridManager.Notes>());
+			notesToAdd.Add(pair.Key, new List<GridManager.Notes>());
 			foreach (GridManager.Notes note in pair.Value){
 				try{
 					int indexInScale = availableNotes.IndexOf(note);
-				}catch (System.Exception)
-				{
+					print("note is: " + (availableNotes[indexInScale]));
+					GridManager.Notes newHarmonizedNote = getNoteFromInt(indexInScale+2);
+					print("added note is: " + (availableNotes[indexInScale]));
+					notesToAdd[pair.Key].Add(note);
+					notesToAdd[pair.Key].Add(newHarmonizedNote);
+				}catch (System.Exception){
 					Debug.Log("ERROR: Note does not index in available notes!");	
+					break;
 					throw;
 				}
 				
 			}
 		}
+
+		foreach (KeyValuePair<int, List<GridManager.Notes>> pair in notesToAdd){
+			foreach (GridManager.Notes note in pair.Value){		
+				harmonizedInput[pair.Key].Add(note);
+			}
+		}		
 		return harmonizedInput;
 	}
 
 	private void playNote(GridManager.Notes note){
+		//print(note);
 		VertexManager.contactSC(note, 0.5f,0.5f,"VoiceA");	
 	}
 
