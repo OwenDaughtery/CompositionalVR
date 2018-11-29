@@ -7,14 +7,16 @@ using Valve.VR;
 
 public class WandManager : MonoBehaviour {
 
+	#region variables
 	private SteamVR_TrackedObject trackedObject = null;
 	private SteamVR_Controller.Device device;
-
 	//the interactionManager manager script
 	private InteractionManager interactionManager = null;
+	//variable to hold how long a button has been held down.
 	float timePressed = 0f;
 
-	// Use this for initialization
+	#endregion
+
 	void Start () {
 		trackedObject = GetComponent<SteamVR_TrackedObject>();
 		interactionManager = GetComponent<InteractionManager>();

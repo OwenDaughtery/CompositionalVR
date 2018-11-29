@@ -38,6 +38,18 @@ public class InteractionManager : MonoBehaviour {
 		highlightBoxCollider();
 	}
 
+	#region simple getters and setters
+
+	//return current game object variable (the game object being held)
+	public GameObject getCurrentGameObject(){
+		return currentGameObject;
+	}
+
+	#endregion
+
+	#region Box Collider Stuff
+
+	//NOT FINISHED, but intended to make a border around the nearest line renderer
 	void highlightBoxCollider(){
 		GameObject bc = getClosestBoxCollider();
 		if(bc){
@@ -46,18 +58,14 @@ public class InteractionManager : MonoBehaviour {
 
 	}
 
-	#region getters and setters
-
-	public GameObject getCurrentGameObject(){
-		return currentGameObject;
-	}
-
+	//add the passed box collider to the list of box colliders being hovered over.
 	public void setHoveringBoxColliders(GameObject newBoxCollider){
 		if(!hoveringBoxColliders.Contains(newBoxCollider)){
 			hoveringBoxColliders.Add(newBoxCollider);
 		}
-	}
+	}	
 
+	//check to see if each of the box colliders in the list are too far away from the controller
 	private void checkHoveringBoxColliders(){
 		List<GameObject> tempBoxColliderList = new List<GameObject>(hoveringBoxColliders);
 		foreach (GameObject bc in tempBoxColliderList){
@@ -66,8 +74,9 @@ public class InteractionManager : MonoBehaviour {
 				hoveringBoxColliders.Remove(bc);
 			}
 		}
-	}
+	}	
 
+	//get the closest box collider that the controller has hovered over.
 	private GameObject getClosestBoxCollider(){
 		float closestPoint = float.MaxValue;
 		GameObject closestBoxCollider = null;
@@ -82,7 +91,9 @@ public class InteractionManager : MonoBehaviour {
 		return closestBoxCollider;
 	}
 
-	#endregion
+	#endregion	
+
+
 
 	#region pick up and put down methods
 
@@ -110,12 +121,13 @@ public class InteractionManager : MonoBehaviour {
 		if(!currentRigidBody){
 			return;
 		}else{
+			//if statement checking the id of the vertex:
 			if(currentRigidBody.GetComponent<VertexManager>().getBaseLineParent().GetComponent<LineManager>().getNumberOfVertices()-1==currentRigidBody.GetComponent<VertexManager>().getVertexID()){
+				//if the id is the last in the line, cycle the voice of the line
 				currentRigidBody.GetComponent<VertexManager>().getParentsLineManager().cycleVoices();
 				resetVariables();
-				//if the id is the last in the line, don't do anything
 			}else{
-				//set currentVertexManager
+				//set current-XYZ variables
 				currentGameObject = currentRigidBody.gameObject;
 				currentVertexManager = currentRigidBody.GetComponent<VertexManager>();
 				currentVertexManager.setIsSelected(true);
@@ -129,31 +141,27 @@ public class InteractionManager : MonoBehaviour {
 				fixedJoint.connectedBody = currentRigidBody;
 				currentVertexManager.onPickUp();
 
-				
+				//if statement to check whether the id of the vertex is editable, if it isn't, act as if a new vertex should be made:
 				if(!isEditable(currentVertexManager.getVertexID(), currentVertexManager.getBaseLineParent().gameObject)){
 					VertexManager newlyCreatedVertexManager = addNewVertex().GetComponent<VertexManager>();
 					newlyCreatedVertexManager.moveTo(oldPos);
-					//AI.updateMasterScore();
-
-				}else{
-					
 				}
 			}
 		}
 	}
 
+	//function for letting go of a vertex
 	public void letGo(){
 		if(!currentRigidBody){
 			return;
 		}else{
-			//don't bother letting go if currentRigidBody is already been deactivated (aka removed)
 			if(!currentGameObject.active){
+				//don't bother letting go if currentRigidBody is already been deactivated (aka removed)
 				return;
 			}else{
 				currentGameObject.transform.parent = currentVertexManager.getBaseLineParent();
 				currentVertexManager.setIsSelected(false);
 
-				
 				Vector3 yToSnap = snap();
 				currentVertexManager.moveTo(yToSnap);
 				currentVertexManager.onPutDown();
@@ -172,27 +180,6 @@ public class InteractionManager : MonoBehaviour {
 		float clampedTiming;
 		yClamper(out clampedY, out clampedTiming);
 		Vector3 currentPos = new Vector3(currentGameObject.transform.position.x, clampedY, currentGameObject.transform.position.z);
-		//Vector3 currentPos = new Vector3(currentGameObject.transform.position.x, currentGameObject.transform.position.y, currentGameObject.transform.position.z);
-		//Vector3 currentPos = new Vector3(controller.GetComponent<SphereCollider>().transform.position.x, clampedY, controller.GetComponent<SphereCollider>().transform.position.z);
-
-		//=====currentPos.Set(currentPos.x, GridManager.getYFromTiming((int)clampedTiming), currentPos.z);
-		
-		/*float maxY = 3.3f;
-		float segment = 3.3f/GridManager.getYSegments();
-		float upper = segment*clampedTiming;
-		float lower = segment *(clampedTiming-1);
-		
-		if(upper-currentPos.y>currentPos.y-lower){
-			currentPos.Set(currentPos.x, (maxY-lower), currentPos.z);
-		}else{
-			currentPos.Set(currentPos.x, (maxY-upper), currentPos.z);
-		}*/
-
-		//i believe this is for the center snapping
-		//currentPos = tetherToPoint(currentVertexManager, currentPos);
-		
-		
-
 		return currentPos;
 	}
 
@@ -202,31 +189,18 @@ public class InteractionManager : MonoBehaviour {
 		float siblingY;
 		float siblingTiming;
 
-
-
+		//get the vertex physically higher than the one currently being examined
 		currentVertexManager.getHigherVertex(out siblingY, out siblingTiming);
 
-
 		int controllersTiming = (int)currentVertexManager.getVertexTiming();
+		//if statement to check whether the parent of the vertex is the controller:
 		if(currentVertexManager.gameObject.transform.parent.transform==gameObject.transform){
 			controllersTiming = GridManager.getClosestTiming(currentVertexManager.gameObject.transform.parent.transform.position.y);
 		}
 		
-		
-		//if(controllersTiming>currentVertexManager.getVertexTiming()){
-		//	print("first not equal!");
-			//controller is out of bounds and has become desynced
-			//clampedTiming = siblingTiming;
-			//clampedY = GridManager.getYFromTiming((int)clampedTiming);
-		//}else{
-		//}
 		clampedTiming = Mathf.Max(currentVertexManager.getVertexTiming(), siblingTiming);
-	
-		
 		clampedY = GridManager.getYFromTiming((int)clampedTiming);//====
 		
-		
-
 		currentVertexManager.getLowerVertex(out siblingY, out siblingTiming);
 
 		clampedTiming = Mathf.Min(clampedTiming, siblingTiming);
@@ -237,10 +211,11 @@ public class InteractionManager : MonoBehaviour {
 			clampedTiming = GridManager.getYSegments()-1;
 			clampedY = GridManager.getYFromTiming((int)clampedTiming);
 		}
-		
-
 	}	
 
+	#endregion
+
+	//remove this method???
 	private Vector3 tetherToPoint(VertexManager vm, Vector3 currentPos){
 		float volume = vm.getVertexVolume();
 		if(!vm.getParentsLineManager().checkIfTetheredForXZ(currentGameObject)){
@@ -255,13 +230,15 @@ public class InteractionManager : MonoBehaviour {
 		}
 	}
 
-	#endregion
+
 
 	#region adding, removing and changing the size of vertices
 
 	//method called when user creates a new vertex while holding another
 	public GameObject addNewVertex(){
+		//if statement to check whether a vertex is currently held
 		if(!currentRigidBody){
+			//if no held vertex, try to create a new one on a line renderer.
 			GameObject closestBoxCollider = getClosestBoxCollider();
 			if(closestBoxCollider){
 				int index = closestBoxCollider.GetComponent<Trigger>().getEndID();
@@ -275,11 +252,11 @@ public class InteractionManager : MonoBehaviour {
 			yClamper(out clampedY, out clampedTiming);
 			Vector3 posToSnap = new Vector3(currentGameObject.transform.position.x, clampedY, currentGameObject.transform.position.z);
 			Vector3 snappedY = snap();
-			//AI.updateMasterScore();
 			return currentVertexManager.getParentsLineManager().addVertex(snappedY, currentVertexManager.getVertexID(), currentGameObject);
 		}
 	}
 
+	//method to see whether a vertex is currently close enough to the controller to be considered "hovering over"
 	public GameObject hoverOverVertex(){
 		if(GetNearestRigidBody()){
 			GameObject nearestVertex = GetNearestRigidBody().gameObject;
@@ -297,6 +274,7 @@ public class InteractionManager : MonoBehaviour {
 		return null;
 	}
 
+	//simple method for changing a hovered over vertices timing and y cordindate
 	public void moveVertexUp(){
 		GameObject nearestVertex = hoverOverVertex();
 		if(nearestVertex){
@@ -315,6 +293,7 @@ public class InteractionManager : MonoBehaviour {
 		}
 	}
 
+	//simple method for changing a hovered over vertices timing and y cordindate
 	public void moveVertexDown(){
 		GameObject nearestVertex = hoverOverVertex();
 		if(nearestVertex){
@@ -336,7 +315,9 @@ public class InteractionManager : MonoBehaviour {
 
 	//method called when user wants to remove the vertex currently being held from the game.
 	public void removeVertex(){
+		//if statement to check whether a vertex is currently being held:
 		if(!currentRigidBody){
+			//if no held vertex, try to remove one that may be being hovered over.
 			GameObject nearestVertex = hoverOverVertex();
 			if(nearestVertex){
 				nearestVertex.transform.parent=gameObject.transform;
@@ -353,6 +334,7 @@ public class InteractionManager : MonoBehaviour {
 		}
 	}
 
+	//method to check whether the vertex is considered "editable"
 	private bool isEditable(int vertexID, GameObject baseLine){
 		if(vertexID>1 && baseLine.GetComponent<LineManager>().getNumberOfVertices()-1!=vertexID){
 			return true;
@@ -361,6 +343,7 @@ public class InteractionManager : MonoBehaviour {
 		}
 	}
 
+	//method used to pass control to the vertex manager
 	public void decreaseVertexSize(){
 		if(!currentRigidBody){
 			return;
@@ -369,6 +352,7 @@ public class InteractionManager : MonoBehaviour {
 		}
 	}
 
+	//method used to pass control to the vertex manager
 	public void increaseVertexSize(){
 		if(!currentRigidBody){
 			return;
@@ -411,7 +395,7 @@ public class InteractionManager : MonoBehaviour {
 		hoveringBoxColliders = new List<GameObject>();
 	}
 
-	//true if everyhtings ok, else false
+	//method used in out of bounds checking
 	private float checkSiblingHeights(){
 		float siblingY;
 		float siblingTiming;
@@ -458,16 +442,7 @@ public class InteractionManager : MonoBehaviour {
 			pos.y=checkSiblingHeights();
 			tempVertexManager.moveTo(pos);
 			outOfBounds = true;
-		}/*else if(currentVertexManager.getHigherVertex()<currentY){
-			pos.Set(currentX, currentVertexManager.getHigherVertex(), currentZ);
-			letGo();
-			tempVertexManager.moveTo(pos);
-			
-		}else if(currentVertexManager.getLowerVertex()>currentY){
-			pos.Set(currentX, currentVertexManager.getLowerVertex(), currentZ);
-			letGo();
-			tempVertexManager.moveTo(pos);
-		}*/	
+		}
 		if(!outOfBounds){
 			Vector3 tempPos= transform.position;
 			tempVertexManager.moveTo(tempPos);

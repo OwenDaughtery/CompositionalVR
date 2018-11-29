@@ -2,6 +2,10 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+//commented out tunes:
+//E5,D5,C5,D5,E5,E5,E5
+
+
 public class AISystemManager : MonoBehaviour {
 
 	private LineManager[] lineManagers;
@@ -37,6 +41,7 @@ public class AISystemManager : MonoBehaviour {
 
 	private List<GridManager.Notes> convertStringToNotes(string notesToInput){
 		List<GridManager.Notes> convertedNotes = new List<GridManager.Notes>();
+		notesToInput = notesToInput.ToUpper();
 		string[] splitString = notesToInput.Split(',');
 
 		foreach (string S in splitString){
@@ -102,7 +107,7 @@ public class AISystemManager : MonoBehaviour {
 			int index=0;
 			foreach (GridManager.Notes note in inputAsNotes){
 				masterScore[index].Add(note);
-				index+=1;
+				index+=4;
 			}
 		}
 		lastKey=key;
@@ -240,7 +245,6 @@ public class AISystemManager : MonoBehaviour {
 	}
 
 	private Dictionary<GridManager.Notes, ChainLink> generateMarkovChain(Dictionary<int, List<GridManager.Notes>> input){
-		print("eyyyoo");
 		Dictionary<GridManager.Notes, ChainLink> markovChain = new Dictionary<GridManager.Notes, ChainLink>();
 		List<GridManager.Notes> encounteredNotes = new List<GridManager.Notes>();
 		foreach (KeyValuePair<int, List<GridManager.Notes>> pair in input){

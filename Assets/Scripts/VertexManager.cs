@@ -40,8 +40,6 @@ public class VertexManager : MonoBehaviour, IPooledObject{
 	private float vertexLength;
 	[SerializeField]
 	private GridManager.Notes vertexNote;
-
-
 	//=====End Sound Variables=====
 
 	#endregion
@@ -64,16 +62,13 @@ public class VertexManager : MonoBehaviour, IPooledObject{
 	}
 
 	public void setVertexTiming(float newVertexTiming){
-		
 		float oldTiming = getVertexTiming();
-		
 		if(newVertexTiming<0){
 			vertexTiming = -1;
 		}else{
 			vertexTiming = newVertexTiming;	
 		}
 		parentsLineManager.updateTimingDict(oldTiming, getVertexTiming(), this);
-		
 	}
 
 	public float getVertexVolume(){
@@ -117,7 +112,6 @@ public class VertexManager : MonoBehaviour, IPooledObject{
 	}
 
 	public float getVertexAngle(){
-
 		return vertexAngle;
 	}
 
@@ -137,20 +131,15 @@ public class VertexManager : MonoBehaviour, IPooledObject{
 	}
 
 	void Update () {
-
+		//if statement to run code if the vertex is being "held"
 		if(isSelected){
-			//print("positon:" + gameObject.transform.position);
 			float distance = Vector2.Distance(Vector2.zero, new Vector2(gameObject.transform.position.x, gameObject.transform.position.z));
-			//print(distance);
-			//print("distance = " + distance);
-			//print("controller position: " + gameObject.transform.parent.transform.position);
 			parentsLineManager.moveLineVertex(vertexID, gameObject.transform.position, parentsRotation);
 			tracerUpdate();
 			noteBoundaryUpdate(getVertexNote());
-			
-			
 		}
 
+		//update all of the lights in the scene of this vertex if any.
 		if(playedLights.Count!=0){
 			lightUpdate();
 		}
@@ -158,13 +147,12 @@ public class VertexManager : MonoBehaviour, IPooledObject{
 
 	#region set ups and updates
 
-
 	//the version of start for this script, sets up variables.
 	public void OnObjectSpawn() {
 		setUp();
 	}
 
-	//method used for setting variables to appropriate values, will be called both on start and onObjectSpawn(0)
+	//method used for setting variables to appropriate values, will be called both on start and onObjectSpawn()
 	private void setUp(){
 		setLastVertexNote(GridManager.Notes.none);
 		playedLights = new List<GameObject>();
@@ -193,6 +181,7 @@ public class VertexManager : MonoBehaviour, IPooledObject{
 		tracer.SetPositions(tracerPositions);
 	}	
 
+	//method used to call methods to show note boundaries if they have been "passed".
 	private void noteBoundaryUpdate(GridManager.Notes vertexNote){
 		if(lastVertexNote!=GridManager.Notes.none){
 			if(lastVertexNote!=vertexNote){
@@ -214,7 +203,7 @@ public class VertexManager : MonoBehaviour, IPooledObject{
 		playedLights.Add(playedLight);
 	}
 
-	//decrease the intensity of the current light, if it goes below 0, return it to the pool
+	//decrease the intensity of the current lights, if it goes below 0, return it to the pool
 	private void lightUpdate(){
 		List<GameObject> lightsToRemove = new List<GameObject>();
 		foreach (GameObject lightObject in playedLights){
@@ -289,8 +278,6 @@ public class VertexManager : MonoBehaviour, IPooledObject{
 		voice = "Voice" + getParentsLineManager().getVoice().ToString();
 	}
 
-
-
 	//called when a vertex is picked up
 	public void onPickUp(){
 		tracer.positionCount+=2;
@@ -304,29 +291,30 @@ public class VertexManager : MonoBehaviour, IPooledObject{
 	//method used to set a vertex (spheres) position to the passed parameter, and then move the associated line vertex to the same position
 	public void moveTo(Vector3 newPos){
 		gameObject.transform.position = newPos;
-		
 		parentsLineManager.moveLineVertex(getVertexID(), newPos, parentsRotation);
-		
-		//print(newPos.z);
-		//print("position: " + gameObject.transform.parent.transform.position.ToString());
-		//print("euger values: " + (gameObject.transform.parent.transform.eulerAngles).ToString());
-		//print("rotation " + ( gameObject.transform.parent.transform.rotation * newPos).ToString());
-		//print(getBaseLineParent().transform.rotation);
-		/*float theta = gameObject.transform.parent.transform.eulerAngles.y;
-		print("Theta: " + theta);
-		float distance = Vector2.Distance(Vector2.zero, new Vector2(newPos.x, newPos.y));
-		print(newPos.x + " - " +  newPos.y);
-		print("distance: " + distance);
-
-		newPos.Set(distance*Mathf.Cos(theta), newPos.y, distance*Mathf.Sin(theta));
-		*/
-
-		//parentsLineManager.moveLineVertex(getVertexID() , gameObject.transform.localPosition);
-		
 	}	
+
+	//decrease the phyiscal size of the vertex as long as it's not too small already
+	public void decreaseSize(){
+		if((transform.lossyScale-new Vector3(0.01f, 0.01f, 0.01f)).x > 0.06f){
+			transform.localScale -= new Vector3(0.01f, 0.01f, 0.01f);
+			setVertexLength(getVertexLength()-0.25f);
+		}
+		
+	}
+
+	//increase the phyiscal size of the vertex as long as it's not too large already
+	public void increaseSize(){
+		if((transform.lossyScale-new Vector3(0.01f, 0.01f, 0.01f)).x < 0.161f){
+			transform.localScale += new Vector3(0.01f, 0.01f, 0.01f);
+			setVertexLength(getVertexLength()+0.25f);
+		}
+	}
 
 	#endregion
 
+	#region playing notes
+	//method that gathers all of the needed variables to play this note, and calls contactSC to talk to Super Collider
 	public void playVertex(){
 		if(getVertexID()>1 && getVertexID()!=getParentsLineManager().getNumberOfVertices()-1){
 			lightUpVertex(parentsLineManager.getColourOfVoice());
@@ -338,40 +326,23 @@ public class VertexManager : MonoBehaviour, IPooledObject{
 			formatVertex(out note, out timing, out volume, out length, out voice);
 			contactSC(note,volume, length, voice);
 
+			//==UNCOMMENT THIS LINE TO KNOW WHEN A VERTEX HAS BEEN PLAYED:==
 			//print(note.ToString() + " " + volume.ToString());
-			//UNCOMMENT THIS LINE TO KNOW WHEN A VERTEX HAS BEEN PLAYED
 		}
 	}
 
+	//send a message to the OSC Client
 	public static void contactSC(GridManager.Notes note, float volume, float length, string voice){
 		if(voice!="None"){
-		
 			//OSC Send
 			List<string> args = new List<string>();
 			args.Add(volume.ToString());
 			args.Add(GridManager.noteToFreq[note].ToString());
 			args.Add(length.ToString());
-
-		
-			
 			OSCHandler.Instance.SendMessageToClient("SuperCollider", "/play"+voice, args);
 		}
 
 	}
-
-	public void decreaseSize(){
-		if((transform.lossyScale-new Vector3(0.01f, 0.01f, 0.01f)).x > 0.06f){
-			transform.localScale -= new Vector3(0.01f, 0.01f, 0.01f);
-			setVertexLength(getVertexLength()-0.25f);
-		}
-		
-	}
-
-	public void increaseSize(){
-		if((transform.lossyScale-new Vector3(0.01f, 0.01f, 0.01f)).x < 0.161f){
-			transform.localScale += new Vector3(0.01f, 0.01f, 0.01f);
-			setVertexLength(getVertexLength()+0.25f);
-		}
-	}
+	#endregion
 
 }

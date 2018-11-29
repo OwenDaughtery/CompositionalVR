@@ -20,23 +20,31 @@ public class GridManager : MonoBehaviour {
 	Vector3 yVector;
 	Vector3 zVector;
 
+	//a list of all note boundaries
 	private List<GameObject> noteBoundaries = new List<GameObject>();
+	//==UNSURE IF THIS LIST IS NEEDED:==
+	//a list of note boundaries that are fading in
 	private List<GameObject> fadingInNoteBoundaries = new List<GameObject>();
+	//==UNSURE IF THIS LIST IS NEEDED:==
+	//a list of note boundaries that are fading out
 	private List<GameObject> fadingOutNoteBoundaries = new List<GameObject>();
+	//a dictionary of note boundaries that are fading out
 	private Dictionary<GameObject, float> fadeOutDictionary = new Dictionary<GameObject, float>();
-	//The vertexManager for any specific vertex (sphere) at any given point
 
-	/*plan is to remove these soon, they are temp debuggin */
+
+	/*plan is to remove these soon, they are temp debugging */
 	private List<GameObject> timingBoundaries = new List<GameObject>();
 	
 	private VertexManager vertexManager;
+	//how quickly should the note boundaries fade out
 	private float fadeSpeed = 0.25f;
 
-	//32 = 12 and 25
-	//24 = 12
+	//how many sections to split the y-axis into.
 	private static int ySegments = 64;
 
+	//Dictionary to hold a reference for converting a y cordinate to a timing int
 	private static Dictionary<float, int> YToTiming = new Dictionary<float,int>(); 
+	//Dictionary to hold a reference for converting a timing int into a y cordinate
 	private static Dictionary<int, float> TimingToY = new Dictionary<int, float>();
 	#endregion
 
@@ -111,10 +119,6 @@ public class GridManager : MonoBehaviour {
 
 	#endregion
 
-	public static int getYSegments(){
-		return ySegments;
-	}
-
 	void Start () {
 		float yIncrement = 3.3f/getYSegments();
 		for (int i = 0; i <= getYSegments(); i++){
@@ -130,17 +134,47 @@ public class GridManager : MonoBehaviour {
 	}
 	
 	void Update () {
-		//every frame, call the method that will update the variables of all the vertices in the environment.
 		getVertexStats();
-		//fadeInNoteBoundaries();
-		//fadeOutNoteBoundaries();
 		tempFadeOut();
 	}
 
+	#region updating and setting up
+
+	//create all of the needed note boundaries
+	private void createNoteBoundaries(){
+		float segmentIncrement = 360/(Notes.GetNames(typeof(Notes)).Length-2);
+		float numberOfSegments = Mathf.CeilToInt(360/segmentIncrement);
+		for (int i = 0; i < numberOfSegments; i++){
+			GameObject noteBoundary = objectPooler.spawnFromPool("NoteBoundary", Vector3.zero, gameObject.transform);
+			noteBoundaries.Add(noteBoundary);
+			float eularAngleValue = i*segmentIncrement;
+			if(eularAngleValue<0){
+				eularAngleValue+=360;
+			}
+			noteBoundary.transform.eulerAngles = new Vector3(0f, eularAngleValue, 90f);
+			noteBoundary.transform.position = rotateNoteBoundary(noteBoundary.transform.position, i*segmentIncrement);
+			noteBoundary.SetActive(false);
+		}
+		
+	}
+
+	//create all of the needed timing boundaries
+	private void createTimingBoundaries(){
+		float segmentIncrement = 3.3f/getYSegments();
+		float numberOfSegments = getYSegments();
+		for(int i = 0; i < numberOfSegments; i++){
+			GameObject timingBoundary = objectPooler.spawnFromPool("NoteBoundary", Vector3.zero, gameObject.transform);
+			timingBoundaries.Add(timingBoundary);
+			float yHeight = 3.3f-(i*segmentIncrement);
+			timingBoundary.transform.position = new Vector3(0f,yHeight,0f);
+			timingBoundary.SetActive(false);//should be true, just debugging.
+		}
+	}
+
+	//method used to keep track of which note boundaries need to be removed
 	public void tempFadeOut(){
 		List<GameObject> keys = new List<GameObject> (fadeOutDictionary.Keys);
 		foreach(GameObject key in keys) {
-			//print(fadeOutDictionary[key]);
 			fadeOutDictionary[key] = fadeOutDictionary[key]-0.01f;
 			if(fadeOutDictionary[key]<=0){
 				key.SetActive(false);
@@ -148,6 +182,13 @@ public class GridManager : MonoBehaviour {
 			}
 		}
 		
+	}
+
+	#endregion
+
+	#region getters and setters
+	public static int getYSegments(){
+		return ySegments;
 	}
 
 	public static float getTimingFromY(float y){
@@ -158,6 +199,7 @@ public class GridManager : MonoBehaviour {
 		return TimingToY[timing];
 	} 
 
+	//given a y cordinate, return the closest timing
 	public static int getClosestTiming(float y){
 		int lastValue = -1;
 		foreach(KeyValuePair<float, int> pair in YToTiming){
@@ -171,46 +213,17 @@ public class GridManager : MonoBehaviour {
 		return (int)lastValue;
 	}
 
-	private void createNoteBoundaries(){
+	#endregion
 
-		//float segmentIncrement = 90;
-		float segmentIncrement = 360/(Notes.GetNames(typeof(Notes)).Length-2);
-		float numberOfSegments = Mathf.CeilToInt(360/segmentIncrement);
-		for (int i = 0; i < numberOfSegments; i++){
-			GameObject noteBoundary = objectPooler.spawnFromPool("NoteBoundary", Vector3.zero, gameObject.transform);
-			noteBoundaries.Add(noteBoundary);
-			//noteBoundary.transform.position.Set(noteBoundary.transform.position.x+5,noteBoundary.transform.position.y,noteBoundary.transform.position.z);
-			float eularAngleValue = i*segmentIncrement;
-			if(eularAngleValue<0){
-				eularAngleValue+=360;
-			}
-			noteBoundary.transform.eulerAngles = new Vector3(0f, eularAngleValue, 90f);
-			noteBoundary.transform.position = rotateNoteBoundary(noteBoundary.transform.position, i*segmentIncrement);
-//			Color currentColour = noteBoundary.GetComponent<Renderer>().material.color;
-//			noteBoundary.GetComponent<Renderer>().material.color= new Color(currentColour.r, currentColour.g,currentColour.b,0.0f);
-			noteBoundary.SetActive(false);
-		}
-		
-	}
-
-	private void createTimingBoundaries(){
-		float segmentIncrement = 3.3f/getYSegments();
-		float numberOfSegments = getYSegments();
-		for(int i = 0; i < numberOfSegments; i++){
-			GameObject timingBoundary = objectPooler.spawnFromPool("NoteBoundary", Vector3.zero, gameObject.transform);
-			timingBoundaries.Add(timingBoundary);
-			float yHeight = 3.3f-(i*segmentIncrement);
-			timingBoundary.transform.position = new Vector3(0f,yHeight,0f);
-			timingBoundary.SetActive(false);//should be true, just debugging.
-		}
-	}
-
+	#region note boundary methods
+	//given a position and an angle, rotate the note.
 	private Vector3 rotateNoteBoundary(Vector3 pos, float theta){
 		pos.x= 2.5f * Mathf.Sin(theta* Mathf.Deg2Rad);
 		pos.z=2.5f * Mathf.Cos(theta* Mathf.Deg2Rad);
 		return pos;
 	}
 
+	//==MIGHT REMOVE THIS METHOD==
 	private void fadeInNoteBoundaries(){
 		List<GameObject> boundariesToRemove = new List<GameObject>();
 		foreach (GameObject boundary in fadingInNoteBoundaries){
@@ -226,6 +239,7 @@ public class GridManager : MonoBehaviour {
 		}
 	}
 
+	//==MIGHT REMOVE THIS METHOD==
 	private void fadeOutNoteBoundaries(){
 		List<GameObject> boundariesToRemove = new List<GameObject>();
 		foreach (GameObject boundary in fadingOutNoteBoundaries){
@@ -264,10 +278,8 @@ public class GridManager : MonoBehaviour {
 				fadeOutDictionary.Add(noteBoundaries[(newNoteID+7)%lengthOfNotes], 1f);
 			}
 		}
-		
-
 	}
-
+	#endregion
 
 	#region main
 
@@ -321,15 +333,12 @@ public class GridManager : MonoBehaviour {
 
 	//method used to "clamp" volume to range 0-ySegments
 	private float convertTiming(float yDist){
-		//0.1623
 		int test;
 		if(YToTiming.TryGetValue(yDist, out test)){
 			test = YToTiming[yDist];
 		}else{
 			return getClosestTiming(yDist);
 		}
-		//float test = Mathf.Floor((getYSegments()-((yDist - 0.1623f) / (3.3f - 0.1623f) * (getYSegments() - 0) + 0)));
-		//print("converted timing: " + test);
 		return test;
 	}
 

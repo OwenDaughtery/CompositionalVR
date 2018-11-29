@@ -33,10 +33,11 @@ public class LineManager : MonoBehaviour {
 	//int variable to hold the index of the last vertex that is played.
 	[SerializeField]
 	private int lastPlayedVertex;
+	//the last height of what is essentially the "read head" of the system.
 	private int lastHeight;
+	//the local rotation of this baseline
 	private float localRotation;
 	private BoxColliderManager boxColliderManager;
-
 
 	//possible colours where the letter corressponds to the voice enum.
 	Color colourA = new Color(0.89f, 0.12f, 0.05f, 1);
@@ -48,9 +49,6 @@ public class LineManager : MonoBehaviour {
 	#endregion
 
 	void Start () {
-		
-
-
 		localRotation = gameObject.transform.eulerAngles.y;
 		timingDict = new Dictionary<float, List<VertexManager>>();
 		for (int i = -1; i <= GridManager.getYSegments(); i++){
@@ -67,35 +65,27 @@ public class LineManager : MonoBehaviour {
 
 		boxColliderManager = this.GetComponent<BoxColliderManager>();
 		pulseManager.activateLineManager(this);
-
-
 	}
 
+	void Update(){
+	}
 
+	//==MAY REMOVE THIS METHOD==
 	public static float FindDegree(float x, float y){
       float value = ((float)((System.Math.Atan2(x, y) / System.Math.PI) * 180f));
       //if (value < 0) value += 360f;
       return value;
-  }
+  	}	
 
-	void Update(){
-		//setActiveLineManager();
-	}
-
+	#region  getters and setters
 	public float getLocalRotation(){
 		return localRotation;
 	}
 
-	public void cycleVoices(){
-		int voiceID = (int)voice;
-		voiceID = (voiceID + 1)%Voices.GetNames(typeof(Voices)).Length;
-		voice = (Voices) voiceID;
-		setVoiceColour();
-	}
-
+	//==MAY REMOVE THIS METHOD==
 	public Dictionary<float, List<VertexManager>> getTimingDict(){
 		return timingDict;
-		
+
 	}
 
 	public void updateTimingDict(float oldTiming, float newTiming, VertexManager vm){
@@ -106,38 +96,14 @@ public class LineManager : MonoBehaviour {
 	public int getNumberOfVertices(){
 		return attachedLR.positionCount;
 	}
-
+	#endregion
+	
+	//==MAY REMOVE THIS ENTIRE REGION==
 	#region tethering
-
-	//method used to check if baseline is tethered. if it is and wasn't before, active this line manager.
-	//if it isn't tethered and was before checking, deactive this line manager. 
-	/*private void setActiveLineManager(){
-		List<GameObject> childrenVertices = getChildrenVertices();
-		foreach (GameObject vertex in childrenVertices){
-			if(checkIfTethered(vertex)){
-				if(isTethered){
-					return;
-				}else{
-					isTethered=true;
-					Vector3 posToReduce = vertex.transform.position;
-					posToReduce.Set(posToReduce.x, posToReduce.y - 0.05f, posToReduce.z);
-					vertex.GetComponent<VertexManager>().moveTo(posToReduce);
-					pulseManager.activateLineManager(this);
-					return;
-				}
-			}
-		}
-		if(isTethered){
-			isTethered = false;
-			pulseManager.deactivateLineManager(this);
-		}else{
-			isTethered = false;
-		}
-	} */
-
 	public bool checkIfTethered(GameObject vertex){
 		return checkIfTetheredForY(vertex) && checkIfTetheredForXZ(vertex);
 	}
+
 
 	public bool checkIfTetheredForY(GameObject vertex){
 		return vertex.GetComponent<VertexManager>().getVertexTiming()==GridManager.getYSegments();
@@ -146,8 +112,6 @@ public class LineManager : MonoBehaviour {
 	public bool checkIfTetheredForXZ(GameObject vertex){
 		return vertex.GetComponent<VertexManager>().getVertexVolume()>0.955f;
 	}
-
-	//simple getter method of variable isTethered.
 
 	#endregion
 
@@ -432,6 +396,13 @@ public class LineManager : MonoBehaviour {
 	#endregion
 
 	#region utilities
+
+	public void cycleVoices(){
+		int voiceID = (int)voice;
+		voiceID = (voiceID + 1)%Voices.GetNames(typeof(Voices)).Length;
+		voice = (Voices) voiceID;
+		setVoiceColour();
+	}
 
 	//simple sorter method to compare 2 vertices by their vertex id's
 	static int sortByVertexID(GameObject v1, GameObject v2){
