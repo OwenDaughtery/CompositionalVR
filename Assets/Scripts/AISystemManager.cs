@@ -17,7 +17,7 @@ public class AISystemManager : MonoBehaviour {
 	public bool playScaleButton = false;
 	public bool playButton = false;
 	public bool randomNoteProduction = false;
-	public bool corpusNoteProduction = false;
+	public bool markovNoteProduction = false;
 	Coroutine coroutine = null;
 	public bool calculateKeyButton = false;
 	private System.Random random = new System.Random();
@@ -210,7 +210,7 @@ public class AISystemManager : MonoBehaviour {
 		return randomNotes;
 	}
 
-	private Dictionary<GridManager.Notes, ChainLink> generateMarkovChain(Dictionary<int, List<GridManager.Notes>> input, Dictionary<int, List<GridManager.Notes>> corpusNotes){
+	private Dictionary<GridManager.Notes, ChainLink> generateMarkovChain(Dictionary<int, List<GridManager.Notes>> input){
 		
 		Dictionary<GridManager.Notes, ChainLink> markovChain = new Dictionary<GridManager.Notes, ChainLink>();
 		List<GridManager.Notes> encounteredNotes = new List<GridManager.Notes>();
@@ -239,6 +239,40 @@ public class AISystemManager : MonoBehaviour {
 		return markovChain;
 	}
 
+	private Dictionary<int, List<GridManager.Notes>> generateMarkovNotes(Dictionary<int, List<GridManager.Notes>> input, Dictionary<GridManager.Notes, ChainLink> markovChain, Dictionary<int, List<GridManager.Notes>> markovNotes){
+		int startingBeat = getEndOfInput(input);
+		List<GridManager.Notes> allNotes = getAllNotesOfInput(input);
+		GridManager.Notes nextNote = allNotes[random.Next(allNotes.Count)];
+		markovNotes[startingBeat].Add(nextNote);
+		for (int i = startingBeat+4; i < markovNotes.Count; i+=4){
+			nextNote = markovChain[nextNote].getNextNote();
+			markovNotes[i].Add(nextNote);
+		}
+		return markovNotes;
+	}
+
+	private List<GridManager.Notes> getAllNotesOfInput(Dictionary<int, List<GridManager.Notes>> input){
+		List<GridManager.Notes> allNotes = new List<GridManager.Notes>();
+		foreach(KeyValuePair<int, List<GridManager.Notes>> pair in input){
+			foreach(GridManager.Notes note in pair.Value){
+				if(!allNotes.Contains(note)){
+					allNotes.Add(note);
+				}
+			}
+		}
+		return allNotes;
+	}
+
+	private int getEndOfInput(Dictionary<int, List<GridManager.Notes>> input){
+		int endOfInput = 0;
+		foreach(KeyValuePair<int, List<GridManager.Notes>> pair in input){
+			if(pair.Value.Count>0){
+				endOfInput=pair.Key;
+			}
+		}
+		return endOfInput;
+	}
+
 
 	private void playNote(GridManager.Notes note){
 		//print(note);
@@ -252,11 +286,11 @@ public class AISystemManager : MonoBehaviour {
 		Dictionary<int, List<GridManager.Notes>> input =  masterScore;
 		Dictionary<int, List<GridManager.Notes>> harmonizedNotes = new Dictionary<int, List<GridManager.Notes>>();
 		Dictionary<int, List<GridManager.Notes>> randomNotes = new Dictionary<int, List<GridManager.Notes>>();
-		Dictionary<int, List<GridManager.Notes>> corpusNotes = new Dictionary<int, List<GridManager.Notes>>();
+		Dictionary<int, List<GridManager.Notes>> markovNotes = new Dictionary<int, List<GridManager.Notes>>();
 		List<GridManager.Notes> notesToPlay = null;
 		for (int i = 0; i < 64; i++){
 			randomNotes.Add(i, new List<GridManager.Notes>());
-			corpusNotes.Add(i, new List<GridManager.Notes>());
+			markovNotes.Add(i, new List<GridManager.Notes>());
 		}
 		int count=0;
 		while(playButton){
@@ -264,17 +298,16 @@ public class AISystemManager : MonoBehaviour {
 			if(randomNoteProduction){
 				randomNotes = generateRandomNotes(randomNotes, 100-(count*5));
 			}
-			if(corpusNoteProduction){
-				Dictionary<GridManager.Notes, ChainLink> markovChain = generateMarkovChain(input, corpusNotes);
-				foreach (KeyValuePair<GridManager.Notes, ChainLink> pair in markovChain){
-					pair.Value.printContents();
-				}
+			if(markovNoteProduction){
+				Dictionary<GridManager.Notes, ChainLink> markovChain = generateMarkovChain(input);
+				markovNotes = generateMarkovNotes(input, markovChain, markovNotes);
 			}
 			
 			foreach (KeyValuePair<int, List<GridManager.Notes>> pair in masterScore){
 				notesToPlay = pair.Value; //original tune notes
 				notesToPlay = concat(notesToPlay, harmonizedNotes[pair.Key]); //concat harmonized
 				notesToPlay = concat(notesToPlay, randomNotes[pair.Key]); // concat random
+				notesToPlay = concat(notesToPlay, markovNotes[pair.Key]);
 				foreach (GridManager.Notes note in notesToPlay){
 					playNote(note);
 					
@@ -318,7 +351,7 @@ public class AISystemManager : MonoBehaviour {
 
 
 	public class ChainLink{
-
+		private System.Random percentChooser = new System.Random();
 		GridManager.Notes mainNote;
 		Dictionary<GridManager.Notes, float> paths = new Dictionary<GridManager.Notes, float>();
 
@@ -332,6 +365,32 @@ public class AISystemManager : MonoBehaviour {
 			}else{
 				paths[newNote]+=1f;
 			}
+		}
+
+		public GridManager.Notes getNextNote(){
+			int p = percentChooser.Next(100);
+			float totalSum = sumAllValues();
+			int index=0;
+			float step = 100/totalSum;
+			float encountered = 0;
+
+			foreach (KeyValuePair<GridManager.Notes, float> pair in paths){
+				if(p<((step*pair.Value)+encountered)){
+					return pair.Key;
+				}else{
+					encountered+=(step*pair.Value);
+				}
+			}
+			Debug.Log("ERROR - No next note found in markov chain");
+			return GridManager.Notes.none;
+		}
+
+		private float sumAllValues(){
+			float totalSum=0;
+			foreach (KeyValuePair<GridManager.Notes, float> pair in paths){
+				totalSum+=pair.Value;
+			}
+			return totalSum;
 		}
 
 		public void printContents(){
