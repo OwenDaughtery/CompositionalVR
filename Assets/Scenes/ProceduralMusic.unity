@@ -209,7 +209,9 @@ MonoBehaviour:
   availableNotes: 
   major: 1
   playScaleButton: 0
-  playButton: 0
+  playButton: 1
+  randomNoteProduction: 0
+  corpusNoteProduction: 1
   calculateKeyButton: 0
 --- !u!4 &95185083
 Transform:
