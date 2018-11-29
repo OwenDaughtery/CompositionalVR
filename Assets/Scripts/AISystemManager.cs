@@ -240,7 +240,12 @@ public class AISystemManager : MonoBehaviour {
 	}
 
 	private Dictionary<int, List<GridManager.Notes>> generateMarkovNotes(Dictionary<int, List<GridManager.Notes>> input, Dictionary<GridManager.Notes, ChainLink> markovChain, Dictionary<int, List<GridManager.Notes>> markovNotes){
-		int startingBeat = getEndOfInput(input);
+		//following code wips previous markov notes from last loop:
+		for (int i = 0; i < markovNotes.Count; i++){
+			markovNotes[i] = new List<GridManager.Notes>();
+		}
+		
+		int startingBeat = getEndOfInput(input)+4;
 		List<GridManager.Notes> allNotes = getAllNotesOfInput(input);
 		GridManager.Notes nextNote = allNotes[random.Next(allNotes.Count)];
 		markovNotes[startingBeat].Add(nextNote);
@@ -278,8 +283,6 @@ public class AISystemManager : MonoBehaviour {
 		//print(note);
 		VertexManager.contactSC(note, 0.5f,0.5f,"VoiceA");	
 	}
-
-
 
 	IEnumerator playInput(){
 		//Dictionary<int, List<GridManager.Notes>> harmonizedInput =  harmonizeInput();
