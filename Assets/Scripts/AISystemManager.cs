@@ -20,19 +20,39 @@ public class AISystemManager : MonoBehaviour {
 	public bool markovNoteProduction = false;
 	public bool harmonizeInputNoteProduction = false;
 	public bool harmonizeMarkovNoteProduction = false;
+	public string notesToInput = "";
+	public bool inputNotes = false;
 	Coroutine coroutine = null;
 	public bool calculateKeyButton = false;
 	private System.Random random = new System.Random();
 	private GridManager.Notes lastKey = GridManager.Notes.none;
 	
 	public Dictionary<int, List<GridManager.Notes>> masterScore = new Dictionary<int, List<GridManager.Notes>>();
-	private GridManager.Notes[] inputtedNotes = new GridManager.Notes[4]{GridManager.Notes.C4, GridManager.Notes.F4, GridManager.Notes.G4, GridManager.Notes.A4};
+	private List<GridManager.Notes> inputtedNotes = new List<GridManager.Notes>();
 	void Start(){
 		populateAllNotes();
 		setUpMasterScore();
-		addUsersInput();
+		//addUsersInput();
 	}
 
+	private List<GridManager.Notes> convertStringToNotes(string notesToInput){
+		List<GridManager.Notes> convertedNotes = new List<GridManager.Notes>();
+		string[] splitString = notesToInput.Split(',');
+
+		foreach (string S in splitString){
+			try{
+				convertedNotes.Add((GridManager.Notes)GridManager.Notes.Parse(typeof(GridManager.Notes), S));
+			}
+			catch (System.Exception)
+			{
+				Debug.LogWarning("ERROR - Cannot convert string to enum, invalid characters. returning empty.");
+				return new List<GridManager.Notes>();
+			}
+			
+		}
+
+		return convertedNotes;
+	}
 
 	private void addUsersInput(){
 		masterScore[0].Add(GridManager.Notes.E5);
@@ -74,6 +94,16 @@ public class AISystemManager : MonoBehaviour {
 		if(calculateKeyButton){
 			calculateKey();
 			calculateKeyButton = false;
+		}
+		if(inputNotes){
+			List<GridManager.Notes> inputAsNotes = convertStringToNotes(notesToInput);
+			notesToInput="";
+			inputNotes=false;
+			int index=0;
+			foreach (GridManager.Notes note in inputAsNotes){
+				masterScore[index].Add(note);
+				index+=1;
+			}
 		}
 		lastKey=key;
 	}
@@ -153,8 +183,6 @@ public class AISystemManager : MonoBehaviour {
 		foreach (KeyValuePair<int, List<GridManager.Notes>> pair in input){
 			notesToAdd.Add(pair.Key, new List<GridManager.Notes>());
 			foreach (GridManager.Notes note in pair.Value){
-				
-				notesToAdd[pair.Key].Add(note);
 				if(pair.Key%4==0){
 					try{
 					
@@ -309,7 +337,7 @@ public class AISystemManager : MonoBehaviour {
 			if(harmonizeInputNoteProduction){
 				harmonizedInputNotes = harmonizeInput(input, harmonizedInputNotes); //harmonise users input
 			}
-			if(harmonizeMarkovNoteProduction){
+			if(harmonizeMarkovNoteProduction && markovNoteProduction){
 				harmonizedMarkovNotes = harmonizeInput(markovNotes, harmonizedMarkovNotes);
 			}
 
