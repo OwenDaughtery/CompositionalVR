@@ -18,6 +18,8 @@ public class AISystemManager : MonoBehaviour {
 	public bool playButton = false;
 	public bool randomNoteProduction = false;
 	public bool markovNoteProduction = false;
+	public bool harmonizeInputNoteProduction = false;
+	public bool harmonizeMarkovNoteProduction = false;
 	Coroutine coroutine = null;
 	public bool calculateKeyButton = false;
 	private System.Random random = new System.Random();
@@ -143,14 +145,12 @@ public class AISystemManager : MonoBehaviour {
 		return availableNotes[newIndex];
 	}
 
-	private Dictionary<int, List<GridManager.Notes>> harmonizeInput(Dictionary<int, List<GridManager.Notes>> input){
+	private Dictionary<int, List<GridManager.Notes>> harmonizeInput(Dictionary<int, List<GridManager.Notes>> input, Dictionary<int, List<GridManager.Notes>> harmonizedInput){
 		int[] upperOrLower = new int[2]{2,-2};
-		Dictionary<int, List<GridManager.Notes>> harmonizedInput = new Dictionary<int, List<GridManager.Notes>>();
 		Dictionary<int, List<GridManager.Notes>> notesToAdd = new Dictionary<int, List<GridManager.Notes>>();
 		
 		foreach (KeyValuePair<int, List<GridManager.Notes>> pair in input){
 			notesToAdd.Add(pair.Key, new List<GridManager.Notes>());
-			harmonizedInput.Add(pair.Key, new List<GridManager.Notes>());
 			foreach (GridManager.Notes note in pair.Value){
 				
 				notesToAdd[pair.Key].Add(note);
@@ -287,17 +287,20 @@ public class AISystemManager : MonoBehaviour {
 	IEnumerator playInput(){
 		//Dictionary<int, List<GridManager.Notes>> harmonizedInput =  harmonizeInput();
 		Dictionary<int, List<GridManager.Notes>> input =  masterScore;
-		Dictionary<int, List<GridManager.Notes>> harmonizedNotes = new Dictionary<int, List<GridManager.Notes>>();
+		Dictionary<int, List<GridManager.Notes>> harmonizedInputNotes = new Dictionary<int, List<GridManager.Notes>>();
+		Dictionary<int, List<GridManager.Notes>> harmonizedMarkovNotes = new Dictionary<int, List<GridManager.Notes>>();
 		Dictionary<int, List<GridManager.Notes>> randomNotes = new Dictionary<int, List<GridManager.Notes>>();
 		Dictionary<int, List<GridManager.Notes>> markovNotes = new Dictionary<int, List<GridManager.Notes>>();
 		List<GridManager.Notes> notesToPlay = null;
 		for (int i = 0; i < 64; i++){
 			randomNotes.Add(i, new List<GridManager.Notes>());
 			markovNotes.Add(i, new List<GridManager.Notes>());
+			harmonizedInputNotes.Add(i, new List<GridManager.Notes>());
+			harmonizedMarkovNotes.Add(i, new List<GridManager.Notes>());
 		}
 		int count=0;
 		while(playButton){
-			harmonizedNotes = harmonizeInput(input);
+			
 			if(randomNoteProduction){
 				randomNotes = generateRandomNotes(randomNotes, 100-(count*5));
 			}
@@ -305,10 +308,17 @@ public class AISystemManager : MonoBehaviour {
 				Dictionary<GridManager.Notes, ChainLink> markovChain = generateMarkovChain(input);
 				markovNotes = generateMarkovNotes(input, markovChain, markovNotes);
 			}
-			
+			if(harmonizeInputNoteProduction){
+				harmonizedInputNotes = harmonizeInput(input, harmonizedInputNotes); //harmonise users input
+			}
+			if(harmonizeMarkovNoteProduction){
+				harmonizedMarkovNotes = harmonizeInput(markovNotes, harmonizedMarkovNotes);
+			}
+
 			foreach (KeyValuePair<int, List<GridManager.Notes>> pair in masterScore){
 				notesToPlay = pair.Value; //original tune notes
-				notesToPlay = concat(notesToPlay, harmonizedNotes[pair.Key]); //concat harmonized
+				notesToPlay = concat(notesToPlay, harmonizedInputNotes[pair.Key]); //concat harmonized
+				notesToPlay = concat(notesToPlay, harmonizedMarkovNotes[pair.Key]); //concat harmonized
 				notesToPlay = concat(notesToPlay, randomNotes[pair.Key]); // concat random
 				notesToPlay = concat(notesToPlay, markovNotes[pair.Key]);
 				foreach (GridManager.Notes note in notesToPlay){
