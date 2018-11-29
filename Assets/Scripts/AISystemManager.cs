@@ -146,6 +146,7 @@ public class AISystemManager : MonoBehaviour {
 	}
 
 	private Dictionary<int, List<GridManager.Notes>> harmonizeInput(Dictionary<int, List<GridManager.Notes>> input, Dictionary<int, List<GridManager.Notes>> harmonizedInput){
+		wipeDict(harmonizedInput);
 		int[] upperOrLower = new int[2]{2,-2};
 		Dictionary<int, List<GridManager.Notes>> notesToAdd = new Dictionary<int, List<GridManager.Notes>>();
 		
@@ -211,7 +212,7 @@ public class AISystemManager : MonoBehaviour {
 	}
 
 	private Dictionary<GridManager.Notes, ChainLink> generateMarkovChain(Dictionary<int, List<GridManager.Notes>> input){
-		
+		print("eyyyoo");
 		Dictionary<GridManager.Notes, ChainLink> markovChain = new Dictionary<GridManager.Notes, ChainLink>();
 		List<GridManager.Notes> encounteredNotes = new List<GridManager.Notes>();
 		foreach (KeyValuePair<int, List<GridManager.Notes>> pair in input){
@@ -240,10 +241,7 @@ public class AISystemManager : MonoBehaviour {
 	}
 
 	private Dictionary<int, List<GridManager.Notes>> generateMarkovNotes(Dictionary<int, List<GridManager.Notes>> input, Dictionary<GridManager.Notes, ChainLink> markovChain, Dictionary<int, List<GridManager.Notes>> markovNotes){
-		//following code wips previous markov notes from last loop:
-		for (int i = 0; i < markovNotes.Count; i++){
-			markovNotes[i] = new List<GridManager.Notes>();
-		}
+		wipeDict(markovNotes);
 		
 		int startingBeat = getEndOfInput(input)+4;
 		List<GridManager.Notes> allNotes = getAllNotesOfInput(input);
@@ -317,10 +315,19 @@ public class AISystemManager : MonoBehaviour {
 
 			foreach (KeyValuePair<int, List<GridManager.Notes>> pair in masterScore){
 				notesToPlay = pair.Value; //original tune notes
-				notesToPlay = concat(notesToPlay, harmonizedInputNotes[pair.Key]); //concat harmonized
-				notesToPlay = concat(notesToPlay, harmonizedMarkovNotes[pair.Key]); //concat harmonized
-				notesToPlay = concat(notesToPlay, randomNotes[pair.Key]); // concat random
-				notesToPlay = concat(notesToPlay, markovNotes[pair.Key]);
+				if(randomNoteProduction){
+					notesToPlay = concat(notesToPlay, randomNotes[pair.Key]); // concat random
+				}
+				if(markovNoteProduction){
+					notesToPlay = concat(notesToPlay, markovNotes[pair.Key]);
+				}
+				if(harmonizeInputNoteProduction){
+					notesToPlay = concat(notesToPlay, harmonizedInputNotes[pair.Key]); //concat harmonized
+				}
+				if(harmonizeMarkovNoteProduction){
+					notesToPlay = concat(notesToPlay, harmonizedMarkovNotes[pair.Key]); //concat harmonized
+				}
+				
 				foreach (GridManager.Notes note in notesToPlay){
 					playNote(note);
 					
@@ -332,6 +339,15 @@ public class AISystemManager : MonoBehaviour {
 		}
 		coroutine=null;
 		
+	}
+
+	private Dictionary<int, List<GridManager.Notes>> wipeDict(Dictionary<int, List<GridManager.Notes>> dictToWipe){
+		//following code wips previous notes from last loop:
+		for (int i = 0; i < dictToWipe.Count; i++){
+			dictToWipe[i] = new List<GridManager.Notes>();
+		}
+
+		return dictToWipe;
 	}
 
 	private List<GridManager.Notes> concat(List<GridManager.Notes> a, List<GridManager.Notes> b){
