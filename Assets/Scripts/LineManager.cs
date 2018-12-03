@@ -78,6 +78,7 @@ public class LineManager : MonoBehaviour {
   	}	
 
 	#region  getters and setters
+	//get the variable local rotation (that represents how this empty object that this line renderer is a child of is rotated)
 	public float getLocalRotation(){
 		return localRotation;
 	}
@@ -88,6 +89,7 @@ public class LineManager : MonoBehaviour {
 
 	}
 
+	//update the timing dictionary by removing the vertex manager from the old key and inserting it into the new one.
 	public void updateTimingDict(float oldTiming, float newTiming, VertexManager vm){
 		timingDict[oldTiming].Remove(vm);
 		timingDict[newTiming].Add(vm);
@@ -148,6 +150,7 @@ public class LineManager : MonoBehaviour {
 		return new Color(0,0,0,1);
 	}
 
+	//simple method to get the voice variable of this line manager
 	public Voices getVoice(){
 		return voice;
 	}
@@ -162,7 +165,6 @@ public class LineManager : MonoBehaviour {
 		return vertices;
 
 	}
-
 
 	//Method used to get vertices (spheres), and return them as a List<GameObject>
 	public List<GameObject> getChildrenVertices(){
@@ -230,6 +232,7 @@ public class LineManager : MonoBehaviour {
 		return vertex;
 	}
 
+	//given the rotation and a position, rotate that position using Quaternions.
 	public Vector3 rotateVertex(Vector3 pos, float rotationFloat){
 		Quaternion rotation = Quaternion.Euler(0,rotationFloat,0);
 		Vector3 myVector = pos;
@@ -239,59 +242,16 @@ public class LineManager : MonoBehaviour {
 
 	//Method used to move the vertex of a linerenderer to a position
 	public void moveLineVertex(int index, Vector3 pos, float eugerValueRotation){
-		//pos=VertexTranslation(pos);
 		pos = rotateVertex(pos, -getLocalRotation());
-		// ========temp comment ====== pos = vertexRotation(pos, eugerValueRotation+270, index);
 		attachedLR.SetPosition(index, pos);
 	}
 
-	private Vector3 vertexRotation(Vector3 pos, float theta, int index){
-		float distance = Vector2.Distance(Vector2.zero, new Vector2(pos.x, pos.z));
-
-		List<GameObject> children = getAllChildrenVerticesForInterpole();
-		float angle = 0;
-		foreach (GameObject child in children){
-			if(child.GetComponent<VertexManager>().getVertexID()==index){
-				angle = child.GetComponent<VertexManager>().getVertexAngle();
-			}
-		}
-		float angleDifference = (angle - (theta)) * Mathf.Deg2Rad;
-		//print(angleDifference);
-		pos.x= distance * Mathf.Sin(angleDifference);
-		pos.z=distance * Mathf.Cos(angleDifference);
-		//270+theta
-
-		return pos;
-	}
-
-	private Vector3 vertexRotationTwo(Vector3 pos, float theta, int index){
-		float distance = Vector2.Distance(Vector2.zero, new Vector2(pos.x, pos.z));
-
-		List<GameObject> children = getAllChildrenVerticesForInterpole();
-		float angle = 0;
-		foreach (GameObject child in children){
-			if(child.GetComponent<VertexManager>().getVertexID()==index){
-				angle = child.GetComponent<VertexManager>().getVertexAngle();
-			}
-		}
-		float angleDifference = (angle - theta) * Mathf.Deg2Rad;
-		print(angle);
-		//print(angleDifference);
-		pos.x= distance * Mathf.Sin(angleDifference);
-		pos.z=distance * Mathf.Cos(angleDifference);
-		//270+theta
-
-		return pos;
-	}
-
 	#endregion
-
 
 	#region addVertex
 
 	//Method used to add a new line renderer vertex and a new vertex sphere.
 	public GameObject addVertex(Vector3 pos, int vertexID, GameObject selectedVertex){
-		
 		
 		pos = rotateVertex(pos, -getLocalRotation());
 		
@@ -397,6 +357,7 @@ public class LineManager : MonoBehaviour {
 
 	#region utilities
 
+	//method used to take the voice id of this line manager, and cycle it by 1 along the list of voices.
 	public void cycleVoices(){
 		int voiceID = (int)voice;
 		voiceID = (voiceID + 1)%Voices.GetNames(typeof(Voices)).Length;
@@ -409,6 +370,7 @@ public class LineManager : MonoBehaviour {
 		return v1.GetComponent<VertexManager>().getVertexID().CompareTo(v2.GetComponent<VertexManager>().getVertexID());
 	}
 
+	//==MAY REMOVE THIS METHOD==:
 	//simple method that translates a given position by the position of the attached gameobject
 	private Vector3 VertexTranslation(Vector3 pos){
 		Vector3 translation = attachedObject.transform.position;
@@ -419,47 +381,6 @@ public class LineManager : MonoBehaviour {
 
 		return pos;
 	}
-	#endregion
-
-	#region playing vertices
-	
-	//method used to play the vertices between indexA and indexB.
-	/*
-	private void playVertices(int indexA, int indexB){
-		//first half of method is to deduce which vertices to play
-		List<GameObject> childrenVertices = getChildrenVertices();
-		List<VertexManager> verticesToPlay = new List<VertexManager>();
-		foreach (GameObject child in childrenVertices){
-			VertexManager childVM = child.GetComponent<VertexManager>();
-			int vertexID = childVM.getVertexID();
-			if(vertexID > indexA && vertexID <= indexB && vertexID!=0){
-				verticesToPlay.Add(childVM);
-			}
-		}
-
-		//once vertices to play are found, light up each one, and play it.
-		foreach (VertexManager child in verticesToPlay){
-			child.lightUpVertex(getColourOfVoice());
-			GridManager.Notes note;
-			float timing;
-			float volume;
-			child.formatVertex(out note, out timing, out volume);
-			contactSC(note,volume);
-
-			print(note.ToString() + " " + volume.ToString());
-		}
-	}
-
-	private void contactSC(GridManager.Notes note, float volume){
-			//OSC Send
-			print("OSC sending");
-
-			List<string> args = new List<string>();
-			args.Add(volume.ToString());
-			args.Add(((int)note-1).ToString());
-			print(((int)note-1).ToString());
-			OSCHandler.Instance.SendMessageToClient("SuperCollider", "/play", args);
-	} */
 	#endregion
 
 	#region Pulse Methods
@@ -474,16 +395,13 @@ public class LineManager : MonoBehaviour {
 		return pos;
 	}
 
-	//method called by pulse manager to calculate a pulse should be on this line renderer.
+	//method called by pulse manager to calculate a pulse should be on this line renderer. (and for creating new lead on pulses)
 	public Vector3 interpole(float height, bool playVertex){
 		float lowerBoundTiming = float.MinValue;
 		float upperBoundTiming = float.MaxValue;
 		int lowerBoundIndex = 0;
 		int upperBoundIndex = 0;
 		int flooredHeight = Mathf.FloorToInt(height);
-
-		
-		
 
 		//get all of the children, even ones attached to controllers.
 		List<GameObject> childrenVertices = getAllChildrenVerticesForInterpole();
@@ -502,21 +420,6 @@ public class LineManager : MonoBehaviour {
 			}
 			
 		} 
-		//print("the lower bound index is: " + lowerBoundIndex);
-		//print("the upper bound index is: " + upperBoundIndex);
-
-	
-		
-
-		/*if(lastHeight>flooredHeight){
-			if(playVertex){
-				foreach (VertexManager vm in timingDict[GridManager.getYSegments()]){
-					if(vm.getVertexID()!=attachedLR.positionCount-1){
-						vm.playVertex();
-					}
-				}
-			}
-		}else */
 	
 		if(lastHeight>flooredHeight && flooredHeight==0){
 			if(playVertex){
@@ -539,21 +442,6 @@ public class LineManager : MonoBehaviour {
 			lastHeight = flooredHeight;
 		}
 		
-		/*
-		//second 1/3 of method used for deciding which vertices should be played, if at all based off a passed boolean variable.
-		if(lowerBoundIndex>lastPlayedVertex){
-			if(playVertex){
-				playVertices(lastPlayedVertex, lowerBoundIndex);
-			}
-			
-			lastPlayedVertex = lowerBoundIndex;
-		}else if(lowerBoundIndex==1 && lastPlayedVertex>lowerBoundIndex){
-			if(playVertex){
-				playVertices(lastPlayedVertex, attachedLR.positionCount-2);
-			}
-			
-			lastPlayedVertex = -1;
-		} */
 		float difference = upperBoundTiming - lowerBoundTiming;
 		float segment = 1/difference;
 		float leftover = height - lowerBoundTiming;

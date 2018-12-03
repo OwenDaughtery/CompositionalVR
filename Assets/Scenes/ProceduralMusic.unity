@@ -209,9 +209,13 @@ MonoBehaviour:
   availableNotes: 
   major: 1
   playScaleButton: 0
-  playButton: 1
+  playButton: 0
   randomNoteProduction: 0
-  corpusNoteProduction: 1
+  markovNoteProduction: 0
+  harmonizeInputNoteProduction: 0
+  harmonizeMarkovNoteProduction: 0
+  notesToInput: E5,D5,C5,D5,E5,E5,E5
+  inputNotes: 0
   calculateKeyButton: 0
 --- !u!4 &95185083
 Transform:
