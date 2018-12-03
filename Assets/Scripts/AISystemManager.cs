@@ -4,7 +4,7 @@ using UnityEngine;
 
 //commented out tunes:
 //E5,D5,C5,D5,E5,E5,E5
-
+//Gs5, none, none, Gs5, Fs5, none, none, B5, A5, Gs5, A5, Gs5, none, none, E5, Fs5 
 
 public class AISystemManager : MonoBehaviour {
 
@@ -29,10 +29,12 @@ public class AISystemManager : MonoBehaviour {
 	public bool playScaleButton = false;
 	//FLIPSWITCH: "flip" to play the tune inputted by the user.
 	public bool playButton = false;
+	public bool playBaseScore = true;
 	//FLIPSWITCH: "flip" to include randomly generated notes in the currently played music.
 	public bool randomNoteProduction = false;
 	//FLIPSWITCH: "flip" to include markov chain notes in the currently played music.
 	public bool markovNoteProduction = false;
+	public bool markovChordProduction = false;
 	//FLIPSWITCH: "flip" to include harmonised notes of USERS input.
 	public bool harmonizeInputNoteProduction = false;
 	//FLIPSWITCH: "flip" to include harmonised notes of MARKOV CHAIN input
@@ -93,7 +95,9 @@ public class AISystemManager : MonoBehaviour {
 			inputNotes=false;
 			int index=0;
 			foreach (GridManager.Notes note in inputAsNotes){
-				masterScore[index].Add(note);
+				if(note!=GridManager.Notes.none){
+					masterScore[index].Add(note);
+				}
 				index+=4;
 			}
 		}
@@ -270,23 +274,52 @@ public class AISystemManager : MonoBehaviour {
 	private Dictionary<int, List<GridManager.Notes>> generateMarkovNotes(Dictionary<int, List<GridManager.Notes>> input, Dictionary<GridManager.Notes, ChainLink> markovChain, Dictionary<int, List<GridManager.Notes>> markovNotes){
 		wipeDict(markovNotes);
 		
-		int startingBeat = getEndOfInput(input)+4;
+		//int startingBeat = getEndOfInput(input)+4;
+		int startingBeat = 0;
 		List<GridManager.Notes> allNotes = getAllNotesOfInput(input);
 		GridManager.Notes nextNote = allNotes[random.Next(allNotes.Count)];
 		markovNotes[startingBeat].Add(nextNote);
 		for (int i = startingBeat+4; i < markovNotes.Count; i+=4){
 			nextNote = markovChain[nextNote].getNextNote();
-			markovNotes[i].Add(nextNote);
+			
+			if(markovChordProduction){
+				markovNotes[i].Add(nextNote);
+				if(i%16==0){
+					foreach (GridManager.Notes note in generateChord(nextNote)){
+						if(nextNote!=note){
+							markovNotes[i].Add(note);
+						}
+						
+					}
+				}
+
+			}else{
+				markovNotes[i].Add(nextNote);
+			}
+			
 		}
 		return markovNotes;
 	}
 	#endregion
 
 	#region utilities
+	private List<GridManager.Notes> generateChord(GridManager.Notes note){
+		List<GridManager.Notes> chord = new List<GridManager.Notes>();
+		chord.Add(note);
+		if(major){
+			chord.Add((GridManager.Notes)(((int)note)+4));
+			chord.Add((GridManager.Notes)(((int)note)+7));
+		}else{
+			chord.Add((GridManager.Notes)(((int)note)+3));
+			chord.Add((GridManager.Notes)(((int)note)+7));
+		}
+		return chord;
+	}
+
 	//method called by update to convert the given string into notes, outputs a log warning if this is not possible.
 	private List<GridManager.Notes> convertStringToNotes(string notesToInput){
 		List<GridManager.Notes> convertedNotes = new List<GridManager.Notes>();
-		notesToInput = notesToInput.ToUpper();
+		//notesToInput = notesToInput.ToUpper();
 		string[] splitString = notesToInput.Split(',');
 		foreach (string S in splitString){
 			try{
@@ -340,6 +373,7 @@ public class AISystemManager : MonoBehaviour {
 
 	//given a note, play it on Super Collider.
 	private void playNote(GridManager.Notes note){
+		print(note);
 		VertexManager.contactSC(note, 0.5f,0.5f,"VoiceA");	
 	}
 
@@ -401,7 +435,12 @@ public class AISystemManager : MonoBehaviour {
 			}
 
 			foreach (KeyValuePair<int, List<GridManager.Notes>> pair in masterScore){
-				notesToPlay = pair.Value; //original tune notes
+				
+				if(playBaseScore){
+					notesToPlay=pair.Value;
+				}else{
+					notesToPlay=new List<GridManager.Notes>();
+				}
 				if(randomNoteProduction){
 					notesToPlay = concat(notesToPlay, randomNotes[pair.Key]); // concat random
 				}
@@ -431,6 +470,7 @@ public class AISystemManager : MonoBehaviour {
 	//play all of the notes in available notes.
 	IEnumerator playScale(){
 		foreach (GridManager.Notes note in availableNotes){
+			
 			playNote(note);
 			yield return new WaitForSeconds(0.1f);
 		}

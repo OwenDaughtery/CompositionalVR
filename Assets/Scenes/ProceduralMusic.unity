@@ -205,7 +205,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 99d4da9a926137e4c90aa8a1c29b85af, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  key: 1
+  key: 10
   availableNotes: 
   major: 1
   playScaleButton: 0
@@ -214,7 +214,8 @@ MonoBehaviour:
   markovNoteProduction: 0
   harmonizeInputNoteProduction: 0
   harmonizeMarkovNoteProduction: 0
-  notesToInput: E5,D5,C5,D5,E5,E5,E5
+  notesToInput: 'Gs5, none, none, Gs5, Fs5, none, none, B5, A5, Gs5, A5, Gs5, none,
+    none, E5, Fs5 '
   inputNotes: 0
   calculateKeyButton: 0
 --- !u!4 &95185083
