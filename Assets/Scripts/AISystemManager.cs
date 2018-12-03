@@ -315,6 +315,11 @@ public class AISystemManager : MonoBehaviour {
 		}
 		return chord;
 	}
+	
+	/*
+	private int decideNextBeat(Dictionary<int, List<GridManager.Notes>> input, int timing){
+
+	}*/
 
 	//method called by update to convert the given string into notes, outputs a log warning if this is not possible.
 	private List<GridManager.Notes> convertStringToNotes(string notesToInput){
